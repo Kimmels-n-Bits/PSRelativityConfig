@@ -274,8 +274,11 @@ class RelativityInstance
 
 class RelativityServer
 {
+    [ValidateNotNullOrEmpty()]
     [String] $Name
+    [ValidateNotNull()]
     [String[]] $Role
+    [ValidateNotNullOrEmpty()]
     [String] $ServerFQDN
     [String] $InstallDirectory
     [String] $SecretStoreInstallDirectory
@@ -302,6 +305,12 @@ class RelativityServer
     RelativityServer([String] $name)
     {
         $this.Name = $name
+        $this.Role = @()
+        $this.ServerFQDN = "$($name).$((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).Domain)"
+        $this.InstallDirectory = "C:\Program Files\kCura Corporation\Relativity\"
+        $this.SecretStoreInstallDirectory = "C:\Program Files\Relativity Secret Store\"
+        $this.QueueManagerInstallDirectory = "C:\Program Files\kCura Corporation\Invariant\QueueManager\"
+        $this.WorkerInstallDirectory = "C:\Program Files\kCura Corporation\Invariant\Worker\"
     }
 
     [void] AddRole([String] $role)

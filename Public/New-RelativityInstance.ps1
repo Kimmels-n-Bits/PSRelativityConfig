@@ -91,39 +91,39 @@ function New-RelativityInstance
     {
         try
         {
-            $RelativityInstance = [RelativityInstance]::New($Name, $Friendlyname)
+            $Instance = [RelativityInstance]::New($Name, $Friendlyname)
 
             if (-not ($null -eq $ServiceAccountWindowsCredential))
             {
-                $RelativityInstance.SetServiceAccountWindowsCredential($ServiceAccountWindowsCredential)
+                $Instance.SetServiceAccountWindowsCredential($ServiceAccountWindowsCredential)
             }
 
             if (-not ($null -eq $EDDSDBOSqlCredential))
             {
-                $RelativityInstance.SetEDDSDBOSqlCredential($EDDSDBOSqlCredential)
+                $Instance.SetEDDSDBOSqlCredential($EDDSDBOSqlCredential)
             }
 
             if (-not ($null -eq $ServiceAccountSqlCredential))
             {
-                $RelativityInstance.SetServiceAccountSqlCredential($ServiceAccountSqlCredential)
+                $Instance.SetServiceAccountSqlCredential($ServiceAccountSqlCredential)
             }
 
             if (-not ($null -eq $RabbitMQCredential))
             {
-                $RelativityInstance.SetRabbitMQCredential($RabbitMQCredential)
+                $Instance.SetRabbitMQCredential($RabbitMQCredential)
             }
 
             if (-not ($null -eq $AdminUserRelativityCredential))
             {
-                $RelativityInstance.SetAdminUserRelativityCredential($AdminUserRelativityCredential)
+                $Instance.SetAdminUserRelativityCredential($AdminUserRelativityCredential)
             }
 
             if (-not ($null -eq $ServiceAccountRelativityCredential))
             {
-                $RelativityInstance.SetServiceAccountRelativityCredential($ServiceAccountRelativityCredential)
+                $Instance.SetServiceAccountRelativityCredential($ServiceAccountRelativityCredential)
             }
 
-            return $RelativityInstance
+            return $Instance
         }
         catch
         {
