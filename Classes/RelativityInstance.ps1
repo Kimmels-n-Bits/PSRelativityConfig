@@ -32,7 +32,6 @@ class RelativityInstance
 
     [void] AddServer([RelativityServer] $server)
     {
-        $this.ValidateServerName($server.Name)
         $this.ValidateServerRole($server.Role)
 
         foreach ($role in $server.Role)
@@ -40,14 +39,15 @@ class RelativityInstance
             $this.ValidateRoleSpecificProperties($server, $role)
         }
 
-        $this.Servers += $server
-    }
+        $ExistingServer = ($this.Servers | Where-Object -Property Name -eq $server.Name)
 
-    [void] ValidateServerName([String] $serverName)
-    {
-        if (-not ($null -eq ($this.Servers | Where-Object -Property Name -eq $serverName)))
+        if ($null -eq $ExistingServer)
         {
-            throw "A server with this name already exists!"
+            $this.Servers += $server
+        }
+        else
+        {
+            $this.MergeServer($ExistingServer, $server)
         }
     }
 
@@ -74,13 +74,13 @@ class RelativityInstance
             "SecretStore"
             {
                 $this.ValidateInstallationDirectory($server.SecretStoreInstallDirectory)
-                $this.ValidateCoreSqlPropertes($server.SqlInstance, $server.SqlPort)
+                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
                 break
             }
             "PrimarySql"
             {
                 $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateCoreSqlPropertes($server.SqlInstance, $server.SqlPort)
+                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
                 $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
                 $this.ValidateExtendedSqlDirectories($server.SqlFulltextDirectory)
                 $this.ValidatePrimarySqlProperties($server.DefaultFileRepository, $server.EDDSFileShare, $server.CacheLocation, $server.DtSearchIndexPath)
@@ -89,7 +89,7 @@ class RelativityInstance
             "DistributedSql"
             {
                 $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateCoreSqlPropertes($server.SqlInstance, $server.SqlPort)
+                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
                 $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
                 $this.ValidateExtendedSqlDirectories($server.SqlFulltextDirectory)
                 break
@@ -114,7 +114,7 @@ class RelativityInstance
             "QueueManager"
             {
                 $this.ValidateInstallationDirectory($server.QueueManagerInstallDirectory)
-                $this.ValidateCoreSqlPropertes($server.SqlInstance, $server.SqlPort)
+                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
                 $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
                 $this.ValidateQueueManagerProperties($server.WorkerNetworkPath, $server.IdentityServerUrl)
                 break
@@ -270,6 +270,45 @@ class RelativityInstance
     {
         $this.ServiceAccountRelativityCredential = $serviceAccountRelativityCredential
     }
+
+    [void] MergeServer([RelativityServer] $existingServer, [RelativityServer] $newServer)
+    {
+        $this.Servers = ($this.Servers | Where-Object -Property Name -ne $existingServer.Name)
+
+        foreach ($Role in $newServer.Role)
+        {
+            if ($Role -notin $existingServer.Role)
+            {
+                $existingServer.AddRole($Role)
+            }
+        }
+
+        $existingServer.ServerFQDN = if ([String]::IsNullOrEmpty($existingServer.ServerFQDN)) { $newServer.ServerFQDN } else { $existingServer.ServerFQDN }
+        $existingServer.InstallDirectory = if ([String]::IsNullOrEmpty($existingServer.InstallDirectory)) { $newServer.InstallDirectory } else { $existingServer.InstallDirectory }
+        $existingServer.SecretStoreInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.SecretStoreInstallDirectory)) { $newServer.SecretStoreInstallDirectory } else { $existingServer.SecretStoreInstallDirectory }
+        $existingServer.QueueManagerInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.QueueManagerInstallDirectory)) { $newServer.QueueManagerInstallDirectory } else { $existingServer.QueueManagerInstallDirectory }
+        $existingServer.WorkerInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.WorkerInstallDirectory)) { $newServer.WorkerInstallDirectory } else { $existingServer.WorkerInstallDirectory }
+        $existingServer.DefaultFileRepository = if ([String]::IsNullOrEmpty($existingServer.DefaultFileRepository)) { $newServer.DefaultFileRepository } else { $existingServer.DefaultFileRepository }
+        $existingServer.EDDSFileShare = if ([String]::IsNullOrEmpty($existingServer.EDDSFileShare)) { $newServer.EDDSFileShare } else { $existingServer.EDDSFileShare }
+        $existingServer.CacheLocation = if ([String]::IsNullOrEmpty($existingServer.CacheLocation)) { $newServer.CacheLocation } else { $existingServer.CacheLocation }
+        $existingServer.DtSearchIndexPath = if ([String]::IsNullOrEmpty($existingServer.DtSearchIndexPath)) { $newServer.DtSearchIndexPath } else { $existingServer.DtSearchIndexPath }
+        $existingServer.DataFilesNetworkPath = if ([String]::IsNullOrEmpty($existingServer.DataFilesNetworkPath)) { $newServer.DataFilesNetworkPath } else { $existingServer.DataFilesNetworkPath }
+        $existingServer.SqlInstance = if ([String]::IsNullOrEmpty($existingServer.SqlInstance)) { $newServer.SqlInstance } else { $existingServer.SqlInstance }
+        $existingServer.SqlPort = if ($null -eq $existingServer.SqlPort) { $newServer.SqlPort } else { $existingServer.SqlPort }
+        $existingServer.UseWinAuth = if ($null -eq $existingServer.UseWinAuth) { $newServer.UseWinAuth } else { $existingServer.UseWinAuth }
+        $existingServer.SqlBackupDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlBackupDirectory)) { $newServer.SqlBackupDirectory } else { $existingServer.SqlBackupDirectory }
+        $existingServer.SqlLogDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlLogDirectory)) { $newServer.SqlLogDirectory } else { $existingServer.SqlLogDirectory }
+        $existingServer.SqlDataDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlDataDirectory)) { $newServer.SqlDataDirectory } else { $existingServer.SqlDataDirectory }
+        $existingServer.SqlFulltextDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlFulltextDirectory)) { $newServer.SqlFulltextDirectory } else { $existingServer.SqlFulltextDirectory }
+        $existingServer.ServiceNamespace = if ([String]::IsNullOrEmpty($existingServer.ServiceNamespace)) { $newServer.ServiceNamespace } else { $existingServer.ServiceNamespace }
+        $existingServer.RabbitMQTLSEnabled = if ($null -eq $existingServer.RabbitMQTLSEnabled) { $newServer.RabbitMQTLSEnabled } else { $existingServer.RabbitMQTLSEnabled }
+        $existingServer.EnableWinAuth = if ($null -eq $existingServer.EnableWinAuth) { $newServer.EnableWinAuth } else { $existingServer.EnableWinAuth }
+        $existingServer.WorkerNetworkPath = if ([String]::IsNullOrEmpty($existingServer.WorkerNetworkPath)) { $newServer.WorkerNetworkPath } else { $existingServer.WorkerNetworkPath }
+        $existingServer.IdentityServerUrl = if ([String]::IsNullOrEmpty($existingServer.IdentityServerUrl)) { $newServer.IdentityServerUrl } else { $existingServer.IdentityServerUrl }
+        $existingServer.NISTPackagePath = if ([String]::IsNullOrEmpty($existingServer.NISTPackagePath)) { $newServer.NISTPackagePath } else { $existingServer.NISTPackagePath }
+
+        $this.Servers += $existingServer
+    }
 }
 
 class RelativityServer
@@ -278,7 +317,6 @@ class RelativityServer
     [String] $Name
     [ValidateNotNull()]
     [String[]] $Role
-    [ValidateNotNullOrEmpty()]
     [String] $ServerFQDN
     [String] $InstallDirectory
     [String] $SecretStoreInstallDirectory
@@ -291,6 +329,7 @@ class RelativityServer
     [String] $DataFilesNetworkPath
     [String] $SqlInstance
     [Int32] $SqlPort
+    [Boolean] $UseWinAuth
     [String] $SqlBackupDirectory
     [String] $SqlLogDirectory
     [String] $SqlDataDirectory
