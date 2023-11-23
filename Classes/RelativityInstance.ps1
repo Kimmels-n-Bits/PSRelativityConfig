@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-  Enum for defining server roles within a Relativity environment.
+Enum for defining server roles within a Relativity environment.
 
 .DESCRIPTION
-  The RelativityServerRole enum enumerates the various roles that a server can be assigned in a Relativity deployment.
-  Each role corresponds to specific functionalities and responsibilities within the system.
+The RelativityServerRole enum enumerates the various roles that a server can be assigned in a Relativity deployment.
+Each role corresponds to specific functionalities and responsibilities within the system.
 
 .EXAMPLE
-  [RelativityServerRole]::Agent
-  Demonstrates how to reference the Agent role from the enum.
+[RelativityServerRole]::Agent
+Demonstrates how to reference the Agent role from the enum.
 
 .NOTES
 #>
@@ -27,23 +27,23 @@ enum RelativityServerRole
 
 <#
 .SYNOPSIS
-  Represents a server in a Relativity environment, encapsulating roles, status, and configuration.
+Represents a server in a Relativity environment, encapsulating roles, status, and configuration.
 
 .DESCRIPTION
-  The RelativityServer class models a server within a Relativity environment. It holds information about the server's roles,
-  online status, and configuration properties necessary for each role. The class provides methods to manage server roles,
-  configure properties, and validate server readiness.
+The RelativityServer class models a server within a Relativity environment. It holds information about the server's roles,
+online status, and configuration properties necessary for each role. The class provides methods to manage server roles,
+configure properties, and validate server readiness.
 
 .EXAMPLE
-  $server = [RelativityServer]::new("ServerName")
-  Creates a new RelativityServer instance with the specified server name.
+$server = [RelativityServer]::new("ServerName")
+Creates a new RelativityServer instance with the specified server name.
 
 .EXAMPLE
-  $server.AddRole([RelativityServerRole]::Agent)
-  Adds the Agent role to the server and configures related properties.
+$server.AddRole([RelativityServerRole]::Agent)
+Adds the Agent role to the server and configures related properties.
 
 .PARAMETER Name
-  The name of the server. This should be a valid network name.
+The name of the server. This should be a valid network name.
 
 .NOTES
 #>
@@ -270,15 +270,15 @@ class RelativityServer
     The SetProperty method assigns a value to a specific configuration property of the server.
     It validates if the property is relevant to the server's assigned roles before setting it.
 
+    .EXAMPLE
+    $server.SetProperty("InstallDir", "C:\InstallPath")
+    Sets the InstallDir property to the specified path.
+
     .PARAMETER property
     The name of the property to set.
 
     .PARAMETER value
     The value to assign to the property.
-
-    .EXAMPLE
-    $server.SetProperty("InstallDir", "C:\InstallPath")
-    Sets the InstallDir property to the specified path.
 
     .NOTES
     #>
@@ -316,7 +316,7 @@ class RelativityServer
     $server.GetResponseFileProperties()
     Returns an array of the server's properties in key=value format.
 
-    .RETURN
+    .OUTPUTS
     An array of strings, each representing a configuration property in key=value format.
 
     .NOTES
@@ -373,12 +373,37 @@ class RelativityServer
     }
 }
 
+<#
+.SYNOPSIS
+Represents an instance of a Relativity environment, managing servers and their configurations.
+
+.DESCRIPTION
+The RelativityInstance class encapsulates details of a Relativity environment, including server management, 
+credentials, and server properties. It allows for adding, merging, and validating servers within the instance.
+
+.EXAMPLE
+$instance = [RelativityInstance]::new("InstanceName")
+Creates a new RelativityInstance with the specified name.
+
+.EXAMPLE
+$instance.AddServer($server)
+Adds the specified server to the instance and validates related properties.
+
+.PARAMETER Name
+The name of the instance.
+
+.PARAMETER FriendlyName
+An optional friendly name for the instance.
+
+.NOTES
+#>
 class RelativityInstance
 {
     [ValidateNotNullOrEmpty()]
     [String] $Name
     [ValidateNotNullOrEmpty()]
     [String] $FriendlyName
+    [ValidateNotNull()]
     [RelativityServer[]] $Servers
     [ValidateNotNull()]
     [PSCredential] $ServiceAccountWindowsCredential
@@ -395,226 +420,154 @@ class RelativityInstance
 
     RelativityInstance([String] $name, [String] $friendlyName = $null)
     {
-        $this.Name = $name
+        try
+        {
+            Write-Verbose "Creating an instance of RelativityInstance."
+            $this.Name = $name
 
-        if ($null -eq $friendlyName)
-        {
-            $this.FriendlyName = $name
+            if ($null -eq $friendlyName)
+            {
+                $this.FriendlyName = $name
+            }
+            else
+            {
+                $this.FriendlyName = $friendlyName
+            }
+
+            $this.Servers = @()
+            Write-Verbose "Created an instance of RelativityInstance."
         }
-        else
+        catch
         {
-            $this.FriendlyName = $friendlyName
+            Write-Error "An error occurred while creating an instance of RelativityInstance for $($this.Name)."
+            throw
         }
     }
 
+    <#
+    .SYNOPSIS
+    Adds a server to the Relativity instance.
+
+    .DESCRIPTION
+    The AddServer method adds a new RelativityServer object to the RelativityInstance.
+    It first validates the response file properties of the server to ensure they are not null or empty.
+    If a server with the same name already exists, it merges the new server's properties with the existing one.
+
+    .EXAMPLE
+    $instance.AddServer($server)
+    Adds the specified RelativityServer object to the RelativityInstance.
+
+    .PARAMETER server
+    The RelativityServer object to be added to the instance.
+
+    .NOTES
+    #>
     [void] AddServer([RelativityServer] $server)
     {
-        $this.ValidateServerRole($server.Role)
-
-        foreach ($role in $server.Role)
+        try
         {
-            $this.ValidateRoleSpecificProperties($server, $role)
-        }
+            Write-Verbose "Adding the $($server.Name) server to $($this.Name)."
+            $this.ValidateResponseFileProperties($server)
 
-        $ExistingServer = ($this.Servers | Where-Object -Property Name -eq $server.Name)
+            $ExistingServer = ($this.Servers | Where-Object -Property Name -eq $server.Name)
 
-        if ($null -eq $ExistingServer)
-        {
-            $this.Servers += $server
-        }
-        else
-        {
-            $this.MergeServer($ExistingServer, $server)
-        }
-    }
-
-    [void] ValidateServerRole([String[]] $serverRole)
-    {
-        if ($null -eq $serverRole)
-        {
-            throw "Server role cannot be null!"
-        }
-
-        foreach ($Role in $serverRole)
-        {
-            if (-not ($Role -in @("SecretStore", "PrimarySql", "DistributedSql", "ServiceBus", "Web", "Agent", "WorkerManager", "Worker")))
+            if ($null -eq $ExistingServer)
             {
-                throw "$($Role) is not an expected server role!"
+                $this.Servers += $server
+                Write-Verbose "Added the $($server.Name) server to $($this.Name)."
+            }
+            else
+            {
+                Write-Verbose "Could not add the $($server.Name) server to $($this.Name) because it already existed."
+                $this.MergeServer($ExistingServer, $server)
             }
         }
+        catch
+        {
+            Write-Error "An error occurred while adding the $($server.Name) server to $($this.Name)."
+            throw
+        }
+        
     }
 
-    [void] ValidateRoleSpecificProperties([RelativityServer] $server, [String] $role)
+    <#
+    .SYNOPSIS
+    Merges an existing server with a new server.
+
+    .DESCRIPTION
+    The MergeServer method combines the properties of an existing server in the instance with those of a new server.
+    Properties from the new server are used to fill in any null or empty properties in the existing server.
+
+    .EXAMPLE
+    $instance.MergeServer($existingServer, $newServer)
+    Merges properties of $newServer into $existingServer within the RelativityInstance.
+
+    .PARAMETER existingServer
+    The existing server in the RelativityInstance.
+
+    .PARAMETER newServer
+    The new server whose properties are to be merged into the existing server.
+
+    .NOTES
+    #>
+    [void] MergeServer([RelativityServer] $existingServer, [RelativityServer] $newServer)
     {
-        switch ($role)
+        try
         {
-            "SecretStore"
+            Write-Verbose "Merging the $($newServer.Name) server with previously-existing server."
+            foreach ($Property in $newServer.ResponseFileProperties.Keys)
             {
-                $this.ValidateInstallationDirectory($server.SecretStoreInstallDirectory)
-                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
-                break
+                if ([String]::IsNullOrEmpty($existingServer.ResponseFileProperties[$Property]))
+                {
+                    Write-Verbose "Adding $($Property) Property to $($existingServer.Name)."
+                    $existingServer.ResponseFileProperties[$Property] = $newServer.ResponseFileProperties[$Property]
+                    Write-Verbose "Added $($Property) Property to $($existingServer.Name)."
+                }
             }
-            "PrimarySql"
+            Write-Verbose "Merged the $($newServer.Name) server with previously-existing server."
+        }
+        catch
+        {
+            Write-Error "An error occurred while merging the $($newServer.Name) server with previously-existing server."
+            throw
+        }
+    }
+
+    <#
+    .SYNOPSIS
+    Validates the response file properties of a Relativity server.
+
+    .DESCRIPTION
+    The ValidateResponseFileProperties method checks the response file properties of a given RelativityServer.
+    It ensures that each property is neither null nor an empty string, throwing an exception if this condition is not met.
+
+    .EXAMPLE
+    $instance.ValidateResponseFileProperties($server)
+    Validates the response file properties of the specified RelativityServer.
+    
+    .PARAMETER server
+    The RelativityServer whose properties are to be validated.
+
+    .NOTES
+    #>
+    [void] ValidateResponseFileProperties([RelativityServer] $server)
+    {
+        try
+        {
+            Write-Verbose "Validating response file properties for $($server.Name)."
+            foreach ($Property in $server.ResponseFileProperties.Keys)
             {
-                $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
-                $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
-                $this.ValidateExtendedSqlDirectories($server.SqlFulltextDirectory)
-                $this.ValidatePrimarySqlProperties($server.DefaultFileRepository, $server.EDDSFileShare, $server.CacheLocation, $server.DtSearchIndexPath)
-                break
+                if ([String]::IsNullOrEmpty($server.ResponseFileProperties[$Property]))
+                {
+                    throw "$($Property) Property of $($server.Name) cannot be null or empty."
+                }
             }
-            "DistributedSql"
-            {
-                $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
-                $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
-                $this.ValidateExtendedSqlDirectories($server.SqlFulltextDirectory)
-                break
-            }
-            "ServiceBus"
-            {
-                $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateServiceBusProperties($server.ServerFQDN, $server.ServiceNamespace, $server.RabbitMQTLSEnabled)
-                break
-            }
-            "Web"
-            {
-                $this.ValidateInstallationDirectory($server.InstallDirectory)
-                $this.ValidateWebServerProperties($server.EnableWinAuth)
-                break
-            }
-            "Agent"
-            {
-                $this.ValidateInstallationDirectory($server.InstallDirectory)
-                break
-            }
-            "WorkerManager"
-            {
-                $this.ValidateInstallationDirectory($server.QueueManagerInstallDirectory)
-                $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
-                $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
-                $this.ValidateWorkerManagerProperties($server.WorkerNetworkPath, $server.IdentityServerUrl)
-                break
-            }
-            "Worker"
-            {
-                $this.ValidateInstallationDirectory($server.WorkerInstallDirectory)
-                break
-            }
+            Write-Verbose "Validated response file properties for $($server.Name)."
         }
-    }
-
-    [void] ValidateInstallationDirectory([String] $installationDirectory)
-    {
-        if ([String]::IsNullOrEmpty($installationDirectory))
+        catch
         {
-            throw "The installation directory must not be null or empty!"
-        }
-    }
-
-    [void] ValidateCoreSqlProperties([String] $sqlInstance, [Int32] $sqlPort)
-    {
-        if ([String]::IsNullOrEmpty($sqlInstance))
-        {
-            throw "The SQL instance must not be null or empty!"
-        }
-
-        if ($null -eq $sqlPort)
-        {
-            throw "The SQL port must not be null!"
-        }
-    }
-
-    [void] ValidateCoreSqlDirectories([String] $sqlBackupDirectory, [String] $sqlLogDirectory, [String] $sqlDataDirectory)
-    {
-        if ([String]::IsNullOrEmpty($sqlBackupDirectory))
-        {
-            throw "The SQL backup directory must be valid!"
-        }
-
-        if ([String]::IsNullOrEmpty($sqlLogDirectory))
-        {
-            throw "The SQL log directory must be valid!"
-        }
-
-        if ([String]::IsNullOrEmpty($sqlDataDirectory))
-        {
-            throw "The SQL data directory must be valid!"
-        }
-    }
-
-    [void] ValidateExtendedSqlDirectories([String] $sqlFulltextDirectory)
-    {
-        if ([String]::IsNullOrEmpty($sqlFulltextDirectory))
-        {
-            throw "The SQL fulltext directory must be valid!"
-        }
-    }
-
-    [void] ValidatePrimarySqlProperties([String] $defaultFileRepository, [String] $eddsFileShare, [String] $cacheLocation, [String] $dtSearchIndexPath)
-    {
-        if (-not ($null -eq ($this.Servers | Where-Object { "PrimarySql" -in $_.Role })))
-        {
-            throw "A server with the PrimarySql server role already exists!"
-        }
-
-        if ([String]::IsNullOrEmpty($defaultFileRepository))
-        {
-            throw "The default file repository must be a valid UNC path!"
-        }
-
-        if ([String]::IsNullOrEmpty($eddsFileShare))
-        {
-            throw "The EDDS file share must be a valid UNC path!"
-        }
-
-        if ([String]::IsNullOrEmpty($cacheLocation))
-        {
-            throw "The cache location must be a valid UNC path!"
-        }
-
-        if ([String]::IsNullOrEmpty($dtSearchIndexPath))
-        {
-            throw "The DTSearch index path must be a valid UNC path!"
-        }
-    }
-
-    [void] ValidateServiceBusProperties([String] $serverFQDN, [String] $serviceNamespace, [Boolean] $rabbitMQTLSEnabled)
-    {
-        if ([String]::IsNullOrEmpty($serverFQDN))
-        {
-            throw "The server fully-qualified domain name must not be null or empty!"
-        }
-
-        if ([String]::IsNullOrEmpty($serviceNamespace))
-        {
-            throw "The RabbitMQ service namespace must not be null or empty!"
-        }
-
-        if ($null -eq $rabbitMQTLSEnabled)
-        {
-            throw "The RabbitMQ TLS Enabled setting must not be null!"
-        }
-    }
-
-    [void] ValidateWebServerProperties([Boolean] $enableWinAuth)
-    {
-        if ($null -eq $enableWinAuth)
-        {
-            throw "The Enable Win Auth setting must not be null!"
-        }
-    }
-
-    [void] ValidateWorkerManagerProperties([String] $workerNetworkPath, [String] $identityServerUrl)
-    {
-        if ([String]::IsNullOrEmpty($workerNetworkPath))
-        {
-            throw "The worker network path must not be null or empty!"
-        }
-
-        if ([String]::IsNullOrEmpty($identityServerUrl))
-        {
-            throw "The identity server URL must not be null or empty!"
+            Write-Error "An error occurred while validating response file properties for $($server.Name)."
+            throw
         }
     }
 
@@ -646,44 +599,5 @@ class RelativityInstance
     [void] SetServiceAccountRelativityCredential([PSCredential] $serviceAccountRelativityCredential)
     {
         $this.ServiceAccountRelativityCredential = $serviceAccountRelativityCredential
-    }
-
-    [void] MergeServer([RelativityServer] $existingServer, [RelativityServer] $newServer)
-    {
-        $this.Servers = ($this.Servers | Where-Object -Property Name -ne $existingServer.Name)
-
-        foreach ($Role in $newServer.Role)
-        {
-            if ($Role -notin $existingServer.Role)
-            {
-                $existingServer.AddRole($Role)
-            }
-        }
-
-        $existingServer.ServerFQDN = if ([String]::IsNullOrEmpty($existingServer.ServerFQDN)) { $newServer.ServerFQDN } else { $existingServer.ServerFQDN }
-        $existingServer.InstallDirectory = if ([String]::IsNullOrEmpty($existingServer.InstallDirectory)) { $newServer.InstallDirectory } else { $existingServer.InstallDirectory }
-        $existingServer.SecretStoreInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.SecretStoreInstallDirectory)) { $newServer.SecretStoreInstallDirectory } else { $existingServer.SecretStoreInstallDirectory }
-        $existingServer.QueueManagerInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.QueueManagerInstallDirectory)) { $newServer.QueueManagerInstallDirectory } else { $existingServer.QueueManagerInstallDirectory }
-        $existingServer.WorkerInstallDirectory = if ([String]::IsNullOrEmpty($existingServer.WorkerInstallDirectory)) { $newServer.WorkerInstallDirectory } else { $existingServer.WorkerInstallDirectory }
-        $existingServer.DefaultFileRepository = if ([String]::IsNullOrEmpty($existingServer.DefaultFileRepository)) { $newServer.DefaultFileRepository } else { $existingServer.DefaultFileRepository }
-        $existingServer.EDDSFileShare = if ([String]::IsNullOrEmpty($existingServer.EDDSFileShare)) { $newServer.EDDSFileShare } else { $existingServer.EDDSFileShare }
-        $existingServer.CacheLocation = if ([String]::IsNullOrEmpty($existingServer.CacheLocation)) { $newServer.CacheLocation } else { $existingServer.CacheLocation }
-        $existingServer.DtSearchIndexPath = if ([String]::IsNullOrEmpty($existingServer.DtSearchIndexPath)) { $newServer.DtSearchIndexPath } else { $existingServer.DtSearchIndexPath }
-        $existingServer.DataFilesNetworkPath = if ([String]::IsNullOrEmpty($existingServer.DataFilesNetworkPath)) { $newServer.DataFilesNetworkPath } else { $existingServer.DataFilesNetworkPath }
-        $existingServer.SqlInstance = if ([String]::IsNullOrEmpty($existingServer.SqlInstance)) { $newServer.SqlInstance } else { $existingServer.SqlInstance }
-        $existingServer.SqlPort = if ($null -eq $existingServer.SqlPort) { $newServer.SqlPort } else { $existingServer.SqlPort }
-        $existingServer.UseWinAuth = if ($null -eq $existingServer.UseWinAuth) { $newServer.UseWinAuth } else { $existingServer.UseWinAuth }
-        $existingServer.SqlBackupDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlBackupDirectory)) { $newServer.SqlBackupDirectory } else { $existingServer.SqlBackupDirectory }
-        $existingServer.SqlLogDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlLogDirectory)) { $newServer.SqlLogDirectory } else { $existingServer.SqlLogDirectory }
-        $existingServer.SqlDataDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlDataDirectory)) { $newServer.SqlDataDirectory } else { $existingServer.SqlDataDirectory }
-        $existingServer.SqlFulltextDirectory = if ([String]::IsNullOrEmpty($existingServer.SqlFulltextDirectory)) { $newServer.SqlFulltextDirectory } else { $existingServer.SqlFulltextDirectory }
-        $existingServer.ServiceNamespace = if ([String]::IsNullOrEmpty($existingServer.ServiceNamespace)) { $newServer.ServiceNamespace } else { $existingServer.ServiceNamespace }
-        $existingServer.RabbitMQTLSEnabled = if ($null -eq $existingServer.RabbitMQTLSEnabled) { $newServer.RabbitMQTLSEnabled } else { $existingServer.RabbitMQTLSEnabled }
-        $existingServer.EnableWinAuth = if ($null -eq $existingServer.EnableWinAuth) { $newServer.EnableWinAuth } else { $existingServer.EnableWinAuth }
-        $existingServer.WorkerNetworkPath = if ([String]::IsNullOrEmpty($existingServer.WorkerNetworkPath)) { $newServer.WorkerNetworkPath } else { $existingServer.WorkerNetworkPath }
-        $existingServer.IdentityServerUrl = if ([String]::IsNullOrEmpty($existingServer.IdentityServerUrl)) { $newServer.IdentityServerUrl } else { $existingServer.IdentityServerUrl }
-        $existingServer.NISTPackagePath = if ([String]::IsNullOrEmpty($existingServer.NISTPackagePath)) { $newServer.NISTPackagePath } else { $existingServer.NISTPackagePath }
-
-        $this.Servers += $existingServer
     }
 }
