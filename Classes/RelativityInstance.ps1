@@ -60,7 +60,7 @@ class RelativityInstance
 
         foreach ($Role in $serverRole)
         {
-            if (-not ($Role -in @("SecretStore", "PrimarySql", "DistributedSql", "ServiceBus", "Web", "Agent", "QueueManager", "Worker")))
+            if (-not ($Role -in @("SecretStore", "PrimarySql", "DistributedSql", "ServiceBus", "Web", "Agent", "WorkerManager", "Worker")))
             {
                 throw "$($Role) is not an expected server role!"
             }
@@ -111,12 +111,12 @@ class RelativityInstance
                 $this.ValidateInstallationDirectory($server.InstallDirectory)
                 break
             }
-            "QueueManager"
+            "WorkerManager"
             {
                 $this.ValidateInstallationDirectory($server.QueueManagerInstallDirectory)
                 $this.ValidateCoreSqlProperties($server.SqlInstance, $server.SqlPort)
                 $this.ValidateCoreSqlDirectories($server.SqlBackupDirectory, $server.SqlLogDirectory, $server.SqlDataDirectory)
-                $this.ValidateQueueManagerProperties($server.WorkerNetworkPath, $server.IdentityServerUrl)
+                $this.ValidateWorkerManagerProperties($server.WorkerNetworkPath, $server.IdentityServerUrl)
                 break
             }
             "Worker"
@@ -228,7 +228,7 @@ class RelativityInstance
         }
     }
 
-    [void] ValidateQueueManagerProperties([String] $workerNetworkPath, [String] $identityServerUrl)
+    [void] ValidateWorkerManagerProperties([String] $workerNetworkPath, [String] $identityServerUrl)
     {
         if ([String]::IsNullOrEmpty($workerNetworkPath))
         {
@@ -354,7 +354,7 @@ class RelativityServer
 
     [void] AddRole([String] $role)
     {
-        if (-not ($role -in @("SecretStore", "PrimarySql", "DistributedSql", "ServiceBus", "Web", "Agent", "QueueManager", "Worker")))
+        if (-not ($role -in @("SecretStore", "PrimarySql", "DistributedSql", "ServiceBus", "Web", "Agent", "WorkerManager", "Worker")))
         {
             throw "$($role) is not an expected server role!"
         }
