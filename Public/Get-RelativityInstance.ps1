@@ -8,64 +8,49 @@ function Get-RelativityInstance
         [String] $PrimarySqlInstance,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String[]] $SecretStore,
+        [String[]] $SecretStoreServers,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String] $SecretStoreSqlInstance,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [Boolean] $UseWinAuth = $true
+        [String] $SecretStoreSqlInstance
     )
 
     Begin
     {
         Write-Verbose "Starting Get-RelativityInstance"
 
-        $GetRelativityInstanceNameQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetRelativityInstanceName.sql") -Raw
-        $GetPrimarySqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetPrimarySqlServerSettings.sql") -Raw
+        $GetInstanceSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "..\Private\Queries\Get-InstanceSettingValue.sql") -Raw
+        <#$GetPrimarySqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetPrimarySqlServerSettings.sql") -Raw
         $GetDistributedSqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetDistributedSqlServerSettings.sql") -Raw
         $GetRabbitMQServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetRabbitMQServerSettings.sql") -Raw
         $GetWebServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetWebServerSettings.sql") -Raw
         $GetAgentServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetAgentServerSettings.sql") -Raw
-        $GetWorkerManagerServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetWorkerManagerServerSettings.sql") -Raw
+        $GetWorkerManagerServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetWorkerManagerServerSettings.sql") -Raw#>
     }
     Process
     {
         try
         {
-            Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
+            Write-Verbose "Retrieving Relativity instance name from $($PrimarySqlInstance)."
+            $Parameters = @{
+                "@Section" = "kCura.LicenseManager"
+                "@Name" = "Instance"
+            }
+            $InstanceName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
             
-            $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
-            $Connection = New-Object System.Data.SqlClient.SqlConnection($ConnectionString)
-            $Connection.Open()
-            $Command = $Connection.CreateCommand()
-            $Command.CommandText = $GetRelativityInstanceNameQuery
-            $InstanceName = $Command.ExecuteScalar()
-
             if ($null -ne $InstanceName)
             {
-                Write-Verbose "Retrieved instance name: $($InstanceName)"
+                Write-Verbose "Retrieved Relativity instance $($InstanceName) from $($PrimarySqlInstance)."
                 $Instance = New-RelativityInstance -Name $InstanceName
             }
-            else
+            else 
             {
-                throw "No instance name was retrieved!"
+                throw "No instance name was retrieved."
             }
-
-            $Connection.Close()
-
-
-            foreach($SecretStoreServer in $SecretStore)
-            {
-                Write-Verbose "Adding SecretStore server: $($SecretStoreServer)"
-                $Server = New-RelativityServer -Name $SecretStoreServer
-                $Server.SqlInstance = $SecretStoreSqlInstance
-                $Server.SqlPort = 1433
-                $Server.UseWinAuth = $UseWinAuth
-                $Server.AddRole("SecretStore")
-                $Instance.AddServer($Server)
+            
+            Get-RelativitySecretStore -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
             }
-
+            <#
             Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
             
             $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
@@ -246,7 +231,7 @@ function Get-RelativityInstance
                 $Instance.AddServer($Server)
 
 
-                <#
+                
                 $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', "LVDZ99RELPQM001")
                 $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Invariant")
                 $DataFilesNetworkPath = $RegistryKey.GetValue("DataFilesPath")
@@ -262,11 +247,11 @@ function Get-RelativityInstance
                 $SqlDataDirectory
                 $SqlLogDirectory
                 $WorkerNetworkPath
-                #>
+                
             }
 
             $Connection.Close()
-
+            #>
             return $Instance
         }
         catch
