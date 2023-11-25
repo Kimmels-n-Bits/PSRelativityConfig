@@ -63,141 +63,150 @@ function Get-RelativityDistributedSqlServer
             {
                 Write-Verbose "Adding DistributedSql server: $($DistributedSqlServer['Name'])."
                 $Server = New-RelativityServer -Name $DistributedSqlServer['Name']
-                $Server.AddRole("DistributedSql")
-                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                Write-Verbose "Retrieving InstallDir property for $($DistributedSqlServer['Name'])."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $DistributedSqlServer['Name'])
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-
-                if ($null -eq $InstallDir)
+                if ($Server.IsOnline)
                 {
-                    throw "No installation directory was retrieved."
-                }
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $DistributedSqlServer['Name']
+                    $Server.AddRole("DistributedSql")
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                $Server.SetProperty("InstallDir", $InstallDir)
-                Write-Verbose "Retrieved InstallDir property for $($DistributedSqlServer['Name'])."
+                    Write-Verbose "Retrieving InstallDir property for $($DistributedSqlServer['Name'])."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $DistributedSqlServer['Name'])
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
+                    $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
 
-                Write-Verbose "Retrieving DistributedSqlInstance property for $($DistributedSqlServer['Name'])."
-                $Parameters = @{
-                    "@Name" = "$($DistributedSqlServer['Name'])"
-                }
-                $DistributedSqlInstance = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDistributedSqlInstanceNameQuery -Parameters $Parameters
+                    if ($null -eq $InstallDir)
+                    {
+                        throw "No installation directory was retrieved."
+                    }
 
-                if ($null -eq $DistributedSqlInstance)
-                {
-                    throw "No distributed SQL instance name was retrieved."
-                }
+                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Write-Verbose "Retrieved InstallDir property for $($DistributedSqlServer['Name'])."
 
-                $Server.SetProperty("DistributedSqlInstance", $DistributedSqlInstance)
-                Write-Verbose "Retrieved DistributedSqlInstance property for $($DistributedSqlServer['Name'])."
+                    Write-Verbose "Retrieving DistributedSqlInstance property for $($DistributedSqlServer['Name'])."
+                    $Parameters = @{
+                        "@Name" = "$($DistributedSqlServer['Name'])"
+                    }
+                    $DistributedSqlInstance = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDistributedSqlInstanceNameQuery -Parameters $Parameters
 
-                Write-Verbose "Retrieving DatabaseBackupDir property for $($DistributedSqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "BackupDirectory"
-                    "@MachineName" = "$($DistributedSqlServer['Name'])"
-                }
-                $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+                    if ($null -eq $DistributedSqlInstance)
+                    {
+                        throw "No distributed SQL instance name was retrieved."
+                    }
 
-                if ($null -eq $DatabaseBackupDir)
-                {
+                    $Server.SetProperty("DistributedSqlInstance", $DistributedSqlInstance)
+                    Write-Verbose "Retrieved DistributedSqlInstance property for $($DistributedSqlServer['Name'])."
+
+                    Write-Verbose "Retrieving DatabaseBackupDir property for $($DistributedSqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "BackupDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($DistributedSqlServer['Name'])"
                     }
                     $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $DatabaseBackupDir)
                     {
-                        throw "No database backup directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "BackupDirectory"
+                            "@MachineName" = ""
+                        }
+                        $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $DatabaseBackupDir)
+                        {
+                            throw "No database backup directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("DatabaseBackupDir", $DatabaseBackupDir)
-                Write-Verbose "Retrieved DatabaseBackupDir property for $($DistributedSqlServer['Name'])."
+                    
+                    $Server.SetProperty("DatabaseBackupDir", $DatabaseBackupDir)
+                    Write-Verbose "Retrieved DatabaseBackupDir property for $($DistributedSqlServer['Name'])."
 
-                Write-Verbose "Retrieving LdfDir property for $($DistributedSqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "LDFDirectory"
-                    "@MachineName" = "$($DistributedSqlServer['Name'])"
-                }
-                $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $LdfDir)
-                {
+                    Write-Verbose "Retrieving LdfDir property for $($DistributedSqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "LDFDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($DistributedSqlServer['Name'])"
                     }
                     $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $LdfDir)
                     {
-                        throw "No database log directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "LDFDirectory"
+                            "@MachineName" = ""
+                        }
+                        $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $LdfDir)
+                        {
+                            throw "No database log directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("LdfDir", $LdfDir)
-                Write-Verbose "Retrieved LdfDir property for $($DistributedSqlServer['Name'])."
+                    
+                    $Server.SetProperty("LdfDir", $LdfDir)
+                    Write-Verbose "Retrieved LdfDir property for $($DistributedSqlServer['Name'])."
 
-                Write-Verbose "Retrieving MdfDir property for $($DistributedSqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "DataDirectory"
-                    "@MachineName" = "$($DistributedSqlServer['Name'])"
-                }
-                $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $MdfDir)
-                {
+                    Write-Verbose "Retrieving MdfDir property for $($DistributedSqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "DataDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($DistributedSqlServer['Name'])"
                     }
                     $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $MdfDir)
                     {
-                        throw "No database data directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "DataDirectory"
+                            "@MachineName" = ""
+                        }
+                        $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $MdfDir)
+                        {
+                            throw "No database data directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("MdfDir", $MdfDir)
-                Write-Verbose "Retrieved MdfDir property for $($DistributedSqlServer['Name'])."
+                    
+                    $Server.SetProperty("MdfDir", $MdfDir)
+                    Write-Verbose "Retrieved MdfDir property for $($DistributedSqlServer['Name'])."
 
-                Write-Verbose "Retrieving FullTextDir property for $($DistributedSqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "FTDirectory"
-                    "@MachineName" = "$($DistributedSqlServer['Name'])"
-                }
-                $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $FullTextDir)
-                {
+                    Write-Verbose "Retrieving FullTextDir property for $($DistributedSqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "FTDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($DistributedSqlServer['Name'])"
                     }
                     $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $FullTextDir)
                     {
-                        throw "No database fulltext directory was retrieved."
-                    }
-                }
-                
-                $Server.SetProperty("FullTextDir", $FullTextDir)
-                Write-Verbose "Retrieved FullTextDir property for $($DistributedSqlServer['Name'])."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "FTDirectory"
+                            "@MachineName" = ""
+                        }
+                        $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
-                $Servers += $Server
+                        if ($null -eq $FullTextDir)
+                        {
+                            throw "No database fulltext directory was retrieved."
+                        }
+                    }
+                    
+                    $Server.SetProperty("FullTextDir", $FullTextDir)
+                    Write-Verbose "Retrieved FullTextDir property for $($DistributedSqlServer['Name'])."
+
+                    $Servers += $Server
+                }
+                else
+                {
+                    Write-Warning "$($DistributedSqlServer['Name']) was not reachable and has been skipped."
+                }
             }
 
             return $Servers

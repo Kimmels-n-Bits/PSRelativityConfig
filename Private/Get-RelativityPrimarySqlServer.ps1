@@ -65,192 +65,201 @@ function Get-RelativityPrimarySqlServer
             {
                 Write-Verbose "Adding PrimarySql server: $($PrimarySqlServer['Name'])."
                 $Server = New-RelativityServer -Name $PrimarySqlServer['Name']
-                $Server.AddRole("PrimarySql")
-                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                Write-Verbose "Retrieving InstallDir property for $($PrimarySqlServer['Name'])."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $PrimarySqlServer['Name'])
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-
-                if ($null -eq $InstallDir)
+                if ($Server.IsOnline)
                 {
-                    throw "No installation directory was retrieved."
-                }
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $PrimarySqlServer['Name']
+                    $Server.AddRole("PrimarySql")
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                $Server.SetProperty("InstallDir", $InstallDir)
-                Write-Verbose "Retrieved InstallDir property for $($PrimarySqlServer['Name'])."
+                    Write-Verbose "Retrieving InstallDir property for $($PrimarySqlServer['Name'])."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $PrimarySqlServer['Name'])
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
+                    $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
 
-                Write-Verbose "Retrieving DefaultFileRepository property for $($PrimarySqlServer['Name'])."
-                $DefaultFileRepository = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDefaultFileRepositoryQuery
+                    if ($null -eq $InstallDir)
+                    {
+                        throw "No installation directory was retrieved."
+                    }
 
-                if ($null -eq $DefaultFileRepository)
-                {
-                    throw "No default file repository was retrieved."
-                }
+                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Write-Verbose "Retrieved InstallDir property for $($PrimarySqlServer['Name'])."
 
-                $Server.SetProperty("DefaultFileRepository", $DefaultFileRepository)
-                Write-Verbose "Retrieved DefaultFileRepository property for $($PrimarySqlServer['Name'])."
+                    Write-Verbose "Retrieving DefaultFileRepository property for $($PrimarySqlServer['Name'])."
+                    $DefaultFileRepository = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDefaultFileRepositoryQuery
 
-                Write-Verbose "Retrieving EddsFileShare property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "Relativity.Data"
-                    "@Name" = "EDDSFileShare"
-                    "@MachineName" = ""
-                }
-                $EddsFileShare = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+                    if ($null -eq $DefaultFileRepository)
+                    {
+                        throw "No default file repository was retrieved."
+                    }
 
-                if ($null -eq $EddsFileShare)
-                {
-                    throw "No EDDS file share was retrieved."
-                }
-                
-                $Server.SetProperty("EddsFileShare", $EddsFileShare)
-                Write-Verbose "Retrieved EddsFileShare property for $($PrimarySqlServer['Name'])."
+                    $Server.SetProperty("DefaultFileRepository", $DefaultFileRepository)
+                    Write-Verbose "Retrieved DefaultFileRepository property for $($PrimarySqlServer['Name'])."
 
-                Write-Verbose "Retrieving CacheLocation property for $($PrimarySqlServer['Name'])."
-                $CacheLocation = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetCacheLocationQuery
+                    Write-Verbose "Retrieving EddsFileShare property for $($PrimarySqlServer['Name'])."
+                    $Parameters = @{
+                        "@Section" = "Relativity.Data"
+                        "@Name" = "EDDSFileShare"
+                        "@MachineName" = ""
+                    }
+                    $EddsFileShare = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
-                if ($null -eq $CacheLocation)
-                {
-                    throw "No cache location was retrieved."
-                }
+                    if ($null -eq $EddsFileShare)
+                    {
+                        throw "No EDDS file share was retrieved."
+                    }
+                    
+                    $Server.SetProperty("EddsFileShare", $EddsFileShare)
+                    Write-Verbose "Retrieved EddsFileShare property for $($PrimarySqlServer['Name'])."
 
-                $Server.SetProperty("CacheLocation", $CacheLocation)
-                Write-Verbose "Retrieved CacheLocation property for $($PrimarySqlServer['Name'])."
+                    Write-Verbose "Retrieving CacheLocation property for $($PrimarySqlServer['Name'])."
+                    $CacheLocation = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetCacheLocationQuery
 
-                Write-Verbose "Retrieving DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
-                $DtSearchIndexPath = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDtSearchIndexPathQuery
+                    if ($null -eq $CacheLocation)
+                    {
+                        throw "No cache location was retrieved."
+                    }
 
-                if ($null -eq $DtSearchIndexPath)
-                {
-                    throw "No dtSearch index path was retrieved."
-                }
+                    $Server.SetProperty("CacheLocation", $CacheLocation)
+                    Write-Verbose "Retrieved CacheLocation property for $($PrimarySqlServer['Name'])."
 
-                $Server.SetProperty("DtSearchIndexPath", $DtSearchIndexPath)
-                Write-Verbose "Retrieved DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
+                    Write-Verbose "Retrieving DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
+                    $DtSearchIndexPath = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDtSearchIndexPathQuery
 
-                Write-Verbose "Retrieving RelativityInstanceName property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.LicenseManager"
-                    "@Name" = "Instance"
-                    "@MachineName" = ""
-                }
-                $RelativityInstanceName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+                    if ($null -eq $DtSearchIndexPath)
+                    {
+                        throw "No dtSearch index path was retrieved."
+                    }
 
-                if ($null -eq $RelativityInstanceName)
-                {
-                    throw "No instance name was retrieved."
-                }
-                
-                $Server.SetProperty("RelativityInstanceName", $RelativityInstanceName)
-                Write-Verbose "Retrieved RelativityInstanceName property for $($PrimarySqlServer['Name'])."
+                    $Server.SetProperty("DtSearchIndexPath", $DtSearchIndexPath)
+                    Write-Verbose "Retrieved DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
 
-                Write-Verbose "Retrieving DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "BackupDirectory"
-                    "@MachineName" = "$($PrimarySqlServer['Name'])"
-                }
-                $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+                    Write-Verbose "Retrieving RelativityInstanceName property for $($PrimarySqlServer['Name'])."
+                    $Parameters = @{
+                        "@Section" = "kCura.LicenseManager"
+                        "@Name" = "Instance"
+                        "@MachineName" = ""
+                    }
+                    $RelativityInstanceName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
-                if ($null -eq $DatabaseBackupDir)
-                {
+                    if ($null -eq $RelativityInstanceName)
+                    {
+                        throw "No instance name was retrieved."
+                    }
+                    
+                    $Server.SetProperty("RelativityInstanceName", $RelativityInstanceName)
+                    Write-Verbose "Retrieved RelativityInstanceName property for $($PrimarySqlServer['Name'])."
+
+                    Write-Verbose "Retrieving DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "BackupDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($PrimarySqlServer['Name'])"
                     }
                     $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $DatabaseBackupDir)
                     {
-                        throw "No database backup directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "BackupDirectory"
+                            "@MachineName" = ""
+                        }
+                        $DatabaseBackupDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $DatabaseBackupDir)
+                        {
+                            throw "No database backup directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("DatabaseBackupDir", $DatabaseBackupDir)
-                Write-Verbose "Retrieved DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
+                    
+                    $Server.SetProperty("DatabaseBackupDir", $DatabaseBackupDir)
+                    Write-Verbose "Retrieved DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
 
-                Write-Verbose "Retrieving LdfDir property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "LDFDirectory"
-                    "@MachineName" = "$($PrimarySqlServer['Name'])"
-                }
-                $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $LdfDir)
-                {
+                    Write-Verbose "Retrieving LdfDir property for $($PrimarySqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "LDFDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($PrimarySqlServer['Name'])"
                     }
                     $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $LdfDir)
                     {
-                        throw "No database log directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "LDFDirectory"
+                            "@MachineName" = ""
+                        }
+                        $LdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $LdfDir)
+                        {
+                            throw "No database log directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("LdfDir", $LdfDir)
-                Write-Verbose "Retrieved LdfDir property for $($PrimarySqlServer['Name'])."
+                    
+                    $Server.SetProperty("LdfDir", $LdfDir)
+                    Write-Verbose "Retrieved LdfDir property for $($PrimarySqlServer['Name'])."
 
-                Write-Verbose "Retrieving MdfDir property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "DataDirectory"
-                    "@MachineName" = "$($PrimarySqlServer['Name'])"
-                }
-                $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $MdfDir)
-                {
+                    Write-Verbose "Retrieving MdfDir property for $($PrimarySqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "DataDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($PrimarySqlServer['Name'])"
                     }
                     $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $MdfDir)
                     {
-                        throw "No database data directory was retrieved."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "DataDirectory"
+                            "@MachineName" = ""
+                        }
+                        $MdfDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
+
+                        if ($null -eq $MdfDir)
+                        {
+                            throw "No database data directory was retrieved."
+                        }
                     }
-                }
-                
-                $Server.SetProperty("MdfDir", $MdfDir)
-                Write-Verbose "Retrieved MdfDir property for $($PrimarySqlServer['Name'])."
+                    
+                    $Server.SetProperty("MdfDir", $MdfDir)
+                    Write-Verbose "Retrieved MdfDir property for $($PrimarySqlServer['Name'])."
 
-                Write-Verbose "Retrieving FullTextDir property for $($PrimarySqlServer['Name'])."
-                $Parameters = @{
-                    "@Section" = "kCura.EDDS.SqlServer"
-                    "@Name" = "FTDirectory"
-                    "@MachineName" = "$($PrimarySqlServer['Name'])"
-                }
-                $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $FullTextDir)
-                {
+                    Write-Verbose "Retrieving FullTextDir property for $($PrimarySqlServer['Name'])."
                     $Parameters = @{
                         "@Section" = "kCura.EDDS.SqlServer"
                         "@Name" = "FTDirectory"
-                        "@MachineName" = ""
+                        "@MachineName" = "$($PrimarySqlServer['Name'])"
                     }
                     $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
                     if ($null -eq $FullTextDir)
                     {
-                        throw "No database fulltext directory was retrieved."
-                    }
-                }
-                
-                $Server.SetProperty("FullTextDir", $FullTextDir)
-                Write-Verbose "Retrieved FullTextDir property for $($PrimarySqlServer['Name'])."
+                        $Parameters = @{
+                            "@Section" = "kCura.EDDS.SqlServer"
+                            "@Name" = "FTDirectory"
+                            "@MachineName" = ""
+                        }
+                        $FullTextDir = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
-                $Servers += $Server
+                        if ($null -eq $FullTextDir)
+                        {
+                            throw "No database fulltext directory was retrieved."
+                        }
+                    }
+                    
+                    $Server.SetProperty("FullTextDir", $FullTextDir)
+                    Write-Verbose "Retrieved FullTextDir property for $($PrimarySqlServer['Name'])."
+
+                    $Servers += $Server
+                }
+                else
+                {
+                    Write-Warning "$($PrimarySqlServer['Name']) was not reachable and has been skipped."
+                }
             }
 
             return $Servers

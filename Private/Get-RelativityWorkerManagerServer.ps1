@@ -62,103 +62,112 @@ function Get-RelativityWorkerManagerServer
             {
                 Write-Verbose "Adding WorkerManager server: $($WorkerManagerServer['Name'])."
                 $Server = New-RelativityServer -Name $WorkerManagerServer['Name']
-                $Server.AddRole("WorkerManager")
-                $Server.SetProperty("RelativitySqlInstance", $PrimarySqlInstance)
 
-                Write-Verbose "Retrieving DataFilesNetworkPath property for $($WorkerManagerServer['Name'])."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $WorkerManagerServer['Name'])
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Invariant")
-                $DataFilesNetworkPath = $RegistryKey.GetValue("DataFilesPath")
-
-                if ($null -eq $DataFilesNetworkPath)
+                if ($Server.IsOnline)
                 {
-                    throw "No data files network path was retrieved."
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $WorkerManagerServer['Name']
+                    $Server.AddRole("WorkerManager")
+                    $Server.SetProperty("RelativitySqlInstance", $PrimarySqlInstance)
+
+                    Write-Verbose "Retrieving DataFilesNetworkPath property for $($WorkerManagerServer['Name'])."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $WorkerManagerServer['Name'])
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Invariant")
+                    $DataFilesNetworkPath = $RegistryKey.GetValue("DataFilesPath")
+
+                    if ($null -eq $DataFilesNetworkPath)
+                    {
+                        throw "No data files network path was retrieved."
+                    }
+
+                    $Server.SetProperty("DataFilesNetworkPath", $DataFilesNetworkPath)
+                    Write-Verbose "Retrieved DataFilesNetworkPath property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving DtSearchIndexPath property for $($WorkerManagerServer['Name'])."
+                    $DtSearchIndexPath = $RegistryKey.GetValue("dtSearchPath")
+
+                    if ($null -eq $DtSearchIndexPath)
+                    {
+                        throw "No dtSearch index path was retrieved."
+                    }
+
+                    $Server.SetProperty("DtSearchIndexPath", $DtSearchIndexPath)
+                    Write-Verbose "Retrieved DtSearchIndexPath property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving SqlInstance property for $($WorkerManagerServer['Name'])."
+                    $SqlInstance = $RegistryKey.GetValue("SQLInstance_QM")
+
+                    if ($null -eq $SqlInstance)
+                    {
+                        throw "No SQL instance was retrieved."
+                    }
+
+                    $Server.SetProperty("SqlInstance", $SqlInstance)
+                    Write-Verbose "Retrieved SqlInstance property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving MdfDir property for $($WorkerManagerServer['Name'])."
+                    $MdfDir = $RegistryKey.GetValue("SQLMDFPath")
+
+                    if ($null -eq $MdfDir)
+                    {
+                        throw "No SQL data directory was retrieved."
+                    }
+
+                    $Server.SetProperty("MdfDir", $MdfDir)
+                    Write-Verbose "Retrieved MdfDir property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving LdfDir property for $($WorkerManagerServer['Name'])."
+                    $LdfDir = $RegistryKey.GetValue("SQLLDFPath")
+
+                    if ($null -eq $LdfDir)
+                    {
+                        throw "No SQL log directory was retrieved."
+                    }
+
+                    $Server.SetProperty("LdfDir", $LdfDir)
+                    Write-Verbose "Retrieved LdfDir property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving WorkerNetworkPath property for $($WorkerManagerServer['Name'])."
+                    $WorkerNetworkPath = $RegistryKey.GetValue("WorkerNetworkPath")
+
+                    if ($null -eq $WorkerNetworkPath)
+                    {
+                        throw "No worker network path was retrieved."
+                    }
+
+                    $Server.SetProperty("WorkerNetworkPath", $WorkerNetworkPath)
+                    Write-Verbose "Retrieved WorkerNetworkPath property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving QueueManagerInstallPath property for $($WorkerManagerServer['Name'])."
+                    $QueueManagerInstallPath = $RegistryKey.GetValue("QueueManagerPath")
+
+                    if ($null -eq $QueueManagerInstallPath)
+                    {
+                        throw "No queue manager install path was retrieved."
+                    }
+
+                    $Server.SetProperty("QueueManagerInstallPath", $QueueManagerInstallPath)
+                    Write-Verbose "Retrieved QueueManagerInstallPath property for $($WorkerManagerServer['Name'])."
+
+                    Write-Verbose "Retrieving IdentityServerUrl property for $($WorkerManagerServer['Name'])."
+                    $Parameters = @{
+                        "@Category" = "IdentityServerURL"
+                    }
+                    $IdentityServerUrl = Invoke-SqlQueryAsScalar -SqlInstance $SqlInstance -Query $GetAppSettingValueQuery -Parameters $Parameters
+
+                    if ($null -eq $IdentityServerUrl)
+                    {
+                        throw "No identity server URL was retrieved."
+                    }
+                    
+                    $Server.SetProperty("IdentityServerUrl", $IdentityServerUrl)
+                    Write-Verbose "Retrieved IdentityServerUrl property for $($WorkerManagerServer['Name'])."
+
+                    $Servers += $Server
                 }
-
-                $Server.SetProperty("DataFilesNetworkPath", $DataFilesNetworkPath)
-                Write-Verbose "Retrieved DataFilesNetworkPath property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving DtSearchIndexPath property for $($WorkerManagerServer['Name'])."
-                $DtSearchIndexPath = $RegistryKey.GetValue("dtSearchPath")
-
-                if ($null -eq $DtSearchIndexPath)
+                else
                 {
-                    throw "No dtSearch index path was retrieved."
+                    Write-Warning "$($WorkerManagerServer['Name']) was not reachable and has been skipped."
                 }
-
-                $Server.SetProperty("DtSearchIndexPath", $DtSearchIndexPath)
-                Write-Verbose "Retrieved DtSearchIndexPath property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving SqlInstance property for $($WorkerManagerServer['Name'])."
-                $SqlInstance = $RegistryKey.GetValue("SQLInstance_QM")
-
-                if ($null -eq $SqlInstance)
-                {
-                    throw "No SQL instance was retrieved."
-                }
-
-                $Server.SetProperty("SqlInstance", $SqlInstance)
-                Write-Verbose "Retrieved SqlInstance property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving MdfDir property for $($WorkerManagerServer['Name'])."
-                $MdfDir = $RegistryKey.GetValue("SQLMDFPath")
-
-                if ($null -eq $MdfDir)
-                {
-                    throw "No SQL data directory was retrieved."
-                }
-
-                $Server.SetProperty("MdfDir", $MdfDir)
-                Write-Verbose "Retrieved MdfDir property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving LdfDir property for $($WorkerManagerServer['Name'])."
-                $LdfDir = $RegistryKey.GetValue("SQLLDFPath")
-
-                if ($null -eq $LdfDir)
-                {
-                    throw "No SQL log directory was retrieved."
-                }
-
-                $Server.SetProperty("LdfDir", $LdfDir)
-                Write-Verbose "Retrieved LdfDir property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving WorkerNetworkPath property for $($WorkerManagerServer['Name'])."
-                $WorkerNetworkPath = $RegistryKey.GetValue("WorkerNetworkPath")
-
-                if ($null -eq $WorkerNetworkPath)
-                {
-                    throw "No worker network path was retrieved."
-                }
-
-                $Server.SetProperty("WorkerNetworkPath", $WorkerNetworkPath)
-                Write-Verbose "Retrieved WorkerNetworkPath property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving QueueManagerInstallPath property for $($WorkerManagerServer['Name'])."
-                $QueueManagerInstallPath = $RegistryKey.GetValue("QueueManagerPath")
-
-                if ($null -eq $QueueManagerInstallPath)
-                {
-                    throw "No queue manager install path was retrieved."
-                }
-
-                $Server.SetProperty("QueueManagerInstallPath", $QueueManagerInstallPath)
-                Write-Verbose "Retrieved QueueManagerInstallPath property for $($WorkerManagerServer['Name'])."
-
-                Write-Verbose "Retrieving IdentityServerUrl property for $($WorkerManagerServer['Name'])."
-                $Parameters = @{
-                    "@Category" = "IdentityServerURL"
-                }
-                $IdentityServerUrl = Invoke-SqlQueryAsScalar -SqlInstance $SqlInstance -Query $GetAppSettingValueQuery -Parameters $Parameters
-
-                if ($null -eq $IdentityServerUrl)
-                {
-                    throw "No identity server URL was retrieved."
-                }
-                
-                $Server.SetProperty("IdentityServerUrl", $IdentityServerUrl)
-                Write-Verbose "Retrieved IdentityServerUrl property for $($WorkerManagerServer['Name'])."
-
-                $Servers += $Server
             }
 
             return $Servers

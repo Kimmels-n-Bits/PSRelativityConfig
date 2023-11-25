@@ -96,11 +96,11 @@ function Get-RelativityServiceBusServer
             
             if ($TlsEnabled -eq "True")
             {
-                $TlsEnabled = $true
+                $TlsEnabled = 1
             }
             else
             {
-                $TlsEnabled = $false
+                $TlsEnabled = 0
             }
 
             Write-Verbose "Retrieved TlsEnabled property for ServiceBus."
@@ -137,7 +137,7 @@ function Get-RelativityServiceBusServer
 
             Write-Verbose "Retrieving ServiceBus servers from $($ServerFQDN)."
 
-            if ($TlsEnabled)
+            if ($TlsEnabled -eq 1)
             {
                 $Protocol = "https"
                 $Port = 15671
@@ -157,25 +157,34 @@ function Get-RelativityServiceBusServer
             {
                 Write-Verbose "Adding ServiceBus server: $($ServiceBusServer)."
                 $Server = New-RelativityServer -Name $ServiceBusServer
-                $Server.AddRole("ServiceBus")
-                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
-                $Server.SetProperty("ServerFQDN", $ServerFQDN)
-                $Server.SetProperty("ServiceNamespace", $ServiceNamespace)
-                $Server.SetProperty("TlsEnabled", $TlsEnabled)
 
-                Write-Verbose "Retrieving InstallDir property for $($ServiceBusServer)."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ServiceBusServer)
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-
-                if (-not $null -eq $InstallDir)
+                if ($Server.IsOnline)
                 {
-                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $ServiceBusServer
+                    $Server.AddRole("ServiceBus")
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
+                    $Server.SetProperty("ServerFQDN", $ServerFQDN)
+                    $Server.SetProperty("ServiceNamespace", $ServiceNamespace)
+                    $Server.SetProperty("TlsEnabled", $TlsEnabled)
+
+                    Write-Verbose "Retrieving InstallDir property for $($ServiceBusServer)."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ServiceBusServer)
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
+
+                    if (-not $null -eq $RegistryKey)
+                    {
+                        $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
+                        $Server.SetProperty("InstallDir", $InstallDir)
+                    }
+
+                    Write-Verbose "Retrieved InstallDir property for $($ServiceBusServer)."
+
+                    $Servers += $Server
                 }
-
-                Write-Verbose "Retrieved InstallDir property for $($ServiceBusServer)."
-
-                $Servers += $Server
+                else
+                {
+                    Write-Warning "$($ServiceBusServer) was not reachable and has been skipped."
+                }
             }
 
             return $Servers

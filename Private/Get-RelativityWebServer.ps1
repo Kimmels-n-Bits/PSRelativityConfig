@@ -62,37 +62,46 @@ function Get-RelativityWebServer
             {
                 Write-Verbose "Adding Web server: $($WebServer['Name'])."
                 $Server = New-RelativityServer -Name $WebServer['Name']
-                $Server.AddRole("Web")
-                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                Write-Verbose "Retrieving InstallDir property for $($WebServer['Name'])."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $WebServer['Name'])
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-
-                if ($null -eq $InstallDir)
+                if ($Server.IsOnline)
                 {
-                    throw "No installation directory was retrieved."
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $WebServer['Name']
+                    $Server.AddRole("Web")
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
+
+                    Write-Verbose "Retrieving InstallDir property for $($WebServer['Name'])."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $WebServer['Name'])
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
+                    $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
+
+                    if ($null -eq $InstallDir)
+                    {
+                        throw "No installation directory was retrieved."
+                    }
+
+                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Write-Verbose "Retrieved InstallDir property for $($WebServer['Name'])."
+
+                    Write-Verbose "Retrieving EnableWinAuth property for $($WebServer['Name'])."
+                    $Parameters = @{
+                        "@Name" = "$($WebServer['Name'])"
+                    }
+                    $EnableWinAuth = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetWebEnableWinAuthQuery -Parameters $Parameters
+
+                    if ($null -eq $EnableWinAuth)
+                    {
+                        throw "No win auth setting was retrieved."
+                    }
+                    
+                    $Server.SetProperty("EnableWinAuth", $EnableWinAuth)
+                    Write-Verbose "Retrieved EnableWinAuth property for $($WebServer['Name'])."
+
+                    $Servers += $Server
                 }
-
-                $Server.SetProperty("InstallDir", $InstallDir)
-                Write-Verbose "Retrieved InstallDir property for $($WebServer['Name'])."
-
-                Write-Verbose "Retrieving EnableWinAuth property for $($WebServer['Name'])."
-                $Parameters = @{
-                    "@Name" = "$($WebServer['Name'])"
-                }
-                $EnableWinAuth = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetWebEnableWinAuthQuery -Parameters $Parameters
-
-                if ($null -eq $EnableWinAuth)
+                else
                 {
-                    throw "No win auth setting was retrieved."
+                    Write-Warning "$($WebServer['Name']) was not reachable and has been skipped."
                 }
-                
-                $Server.SetProperty("EnableWinAuth", $EnableWinAuth)
-                Write-Verbose "Retrieved EnableWinAuth property for $($WebServer['Name'])."
-
-                $Servers += $Server
             }
 
             return $Servers

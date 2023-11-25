@@ -60,23 +60,32 @@ function Get-RelativityAgentServer
             {
                 Write-Verbose "Adding Agent server: $($AgentServer['Name'])."
                 $Server = New-RelativityServer -Name $AgentServer['Name']
-                $Server.AddRole("Agent")
-                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
-                Write-Verbose "Retrieving InstallDir property for $($AgentServer['Name'])."
-                $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $AgentServer['Name'])
-                $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-
-                if ($null -eq $InstallDir)
+                if ($Server.IsOnline)
                 {
-                    throw "No installation directory was retrieved."
+                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $AgentServer['Name']
+                    $Server.AddRole("Agent")
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
+
+                    Write-Verbose "Retrieving InstallDir property for $($AgentServer['Name'])."
+                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $AgentServer['Name'])
+                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
+                    $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
+
+                    if ($null -eq $InstallDir)
+                    {
+                        throw "No installation directory was retrieved."
+                    }
+
+                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Write-Verbose "Retrieved InstallDir property for $($AgentServer['Name'])."
+
+                    $Servers += $Server
                 }
-
-                $Server.SetProperty("InstallDir", $InstallDir)
-                Write-Verbose "Retrieved InstallDir property for $($AgentServer['Name'])."
-
-                $Servers += $Server
+                else
+                {
+                    Write-Warning "$($AgentServer['Name']) was not reachable and has been skipped."
+                }
             }
 
             return $Servers

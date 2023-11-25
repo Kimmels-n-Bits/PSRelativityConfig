@@ -59,23 +59,31 @@ function Get-RelativitySecretStoreServer
             {
                 Write-Verbose "Adding SecretStore server: $($SecretStoreServer)."
                 $Server = New-RelativityServer -Name $SecretStoreServer
-                $Server.AddRole("SecretStore")
-                $Server.SetProperty("SqlInstanceServerName", $SecretStoreSqlInstance)
 
-                Write-Verbose "Retrieving InstallDir property for $($SecretStoreServer)."
-                $ServicePathWithArguments = (Get-CimInstance -ComputerName $SecretStoreServer -ClassName "Win32_Service" -Filter 'Name = "Relativity Secret Store"').PathName
-                
-                if ($null -eq $ServicePathWithArguments)
+                if ($Server.IsOnline)
                 {
-                    throw "No installation directory was retrieved."
-                }
+                    $Server.AddRole("SecretStore")
+                    $Server.SetProperty("SqlInstanceServerName", $SecretStoreSqlInstance)
 
-                $ServicePath = ($ServicePathWithArguments -replace "https://\*:.*$","").Trim().Trim('"')
-                $InstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
-                $Server.SetProperty("InstallDir", $InstallDir)
-                Write-Verbose "Retrieved InstallDir property for $($SecretStoreServer)."
-                
-                $Servers += $Server
+                    Write-Verbose "Retrieving InstallDir property for $($SecretStoreServer)."
+                    $ServicePathWithArguments = (Get-CimInstance -ComputerName $SecretStoreServer -ClassName "Win32_Service" -Filter 'Name = "Relativity Secret Store"').PathName
+                    
+                    if ($null -eq $ServicePathWithArguments)
+                    {
+                        throw "No installation directory was retrieved."
+                    }
+
+                    $ServicePath = ($ServicePathWithArguments -replace "https://\*:.*$","").Trim().Trim('"')
+                    $InstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
+                    $Server.SetProperty("InstallDir", $InstallDir)
+                    Write-Verbose "Retrieved InstallDir property for $($SecretStoreServer)."
+                    
+                    $Servers += $Server
+                }
+                else
+                {
+                    Write-Warning "$($SecretStoreServer) was not reachable and has been skipped."
+                }
             }
 
             return $Servers

@@ -1,3 +1,41 @@
+<#
+.SYNOPSIS
+Retrieves the configuration of a Relativity instance including all associated servers and their roles.
+
+.DESCRIPTION
+The Get-RelativityInstance function gathers comprehensive information about a specific Relativity instance. 
+It retrieves the instance name and the configuration of various server roles including Agent, Distributed SQL, 
+Primary SQL, Secret Store, Service Bus, Web, Worker Manager, and Worker servers.
+
+.PARAMETER PrimarySqlInstance
+Specifies the primary SQL instance to query. This instance is used to gather data about the configuration and properties 
+of the Relativity instance and its various servers.
+
+.PARAMETER SecretStoreServers
+Specifies an array of server names where the Relativity Secret Store is installed. These servers will be queried to 
+retrieve their configuration and installation details.
+
+.PARAMETER SecretStoreSqlInstance
+Specifies the name of the SQL instance associated with the Secret Store. This information is used to set properties 
+on each server object.
+
+.EXAMPLE
+$RelativityInstance = Get-RelativityInstance -PrimarySqlInstance "SQLInstanceName" -SecretStoreServers @("Server1", "Server2") -SecretStoreSqlInstance "SQLInstanceName"
+
+This example retrieves the configuration of a Relativity instance, including details of its various servers, from the specified primary SQL instance.
+
+.INPUTS
+None.
+
+.OUTPUTS
+RelativityInstance
+Returns a RelativityInstance object that encapsulates details of the Relativity instance and its associated servers.
+
+.NOTES
+This function is a composite command that internally calls multiple functions to aggregate information about different 
+server roles within the Relativity instance. Adequate permissions and network access are required to successfully execute 
+these sub-commands.
+#>
 function Get-RelativityInstance
 {
     [CmdletBinding()]
@@ -42,7 +80,11 @@ function Get-RelativityInstance
                 throw "No instance name was retrieved."
             }
             
-            Get-RelativitySecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
+            Get-RelativityAgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityDistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
@@ -50,7 +92,7 @@ function Get-RelativityInstance
                 $Instance.AddServer($_)
             }
 
-            Get-RelativityDistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-RelativitySecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
@@ -59,10 +101,6 @@ function Get-RelativityInstance
             }
 
             Get-RelativityWebServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
-                $Instance.AddServer($_)
-            }
-
-            Get-RelativityAgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 

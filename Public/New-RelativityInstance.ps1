@@ -1,57 +1,52 @@
 <#
 .SYNOPSIS
-Function to create a new instance of a RelativityInstance object.
+Creates a new RelativityInstance object with specified properties and credentials.
 
 .DESCRIPTION
-This function creates and returns a new instance of a RelativityInstance object.
+The New-RelativityInstance function creates a new RelativityInstance object. This object represents a Relativity instance 
+and includes properties such as name, friendly name, and various credentials necessary for different aspects of the 
+instance like database access, service account, and admin user access.
 
 .PARAMETER Name
-Mandatory. Specifies the name of the Relativity instance.
+Specifies the name of the Relativity instance. This name is used to identify the instance.
 
 .PARAMETER FriendlyName
-Optional. Specifies the friendly name of the Relativity instance. By default this will be equal to the Name parameter.
+Specifies a friendly name for the Relativity instance, used for display purposes. If not provided, defaults to the value of Name.
 
 .PARAMETER ServiceAccountWindowsCredential
-Optional. Specifies a PSCredential object containing the service account credentials.
+Specifies the Windows credential object for the service account associated with the Relativity instance.
 
 .PARAMETER EDDSDBOSqlCredential
-Optional. Specifies a PSCredential object containing the EDDSDBO SQL credentials.
+Specifies the SQL credential object for the EDDS database owner in the Relativity instance.
 
 .PARAMETER ServiceAccountSqlCredential
-Optional. Specifies a PSCredential object containing sysadmin-level SQL credentials.
+Specifies the SQL credential object for the service account in the Relativity instance.
 
 .PARAMETER RabbitMQCredential
-Optional. Specifies a PSCredential object containing the RabbitMQ credentials.
+Specifies the credential object for RabbitMQ in the Relativity instance.
 
 .PARAMETER AdminUserRelativityCredential
-Optional. Specifies a PSCredential object containing the admin Relativity User credentials.
+Specifies the Relativity admin user credential object.
 
 .PARAMETER ServiceAccountRelativityCredential
-Optional. Specifies a PSCredential object containing the service account Relativity User credentials.
+Specifies the Relativity service account credential object.
+
+.EXAMPLE
+$RelativityInstance = New-RelativityInstance -Name "RelativityInstance01" -FriendlyName "Relativity Dev Instance"
+
+This example creates a new RelativityInstance object with the name "RelativityInstance01" and a friendly name "Relativity Dev Instance".
 
 .INPUTS
-None. You cannot pipe objects to New-RelativityInstance.
+None.
 
 .OUTPUTS
-New-RelativityInstance returns a new instance of a RelativityInstance object.
+RelativityInstance
+Returns a new RelativityInstance object with the specified properties and credentials.
 
-.EXAMPLE
-New-RelativityInstance -Name "Instance01"
-
-This example creates a new RelativityInstance object named "Instance01".
-
-.EXAMPLE
-New-RelativityInstance -Name "Instance01" -FriendlyName "Detroit"
-
-This example creates a new RelativityInstance object named "Instance01" with the friendly name "Detroit".
-
-.EXAMPLE
-$ServiceAccountCred = Get-Credential
-New-RelativityInstance -Name "Instance01" -ServiceAccountWindowsCredential $ServiceAccountCred
-
-This example creates a new RelativityInstance object named "Instance01 with the specified Windows service account credentials.
+.NOTES
+The function accepts PSCredential objects for various credentials, ensuring secure handling of sensitive information. 
+It's crucial to provide correct and valid credentials for the Relativity instance to function properly.
 #>
-
 function New-RelativityInstance
 {
     [CmdletBinding()]
