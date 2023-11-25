@@ -3,10 +3,9 @@
 Retrieves configured SecretStore servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativitySecretStore function is designed to retrieve a collection of SecretStore server objects for 
+The Get-RelativitySecretStoreServer function is designed to retrieve a collection of SecretStore server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the SQL instance 
-server name and the installation directory of the Relativity Secret Store. The function queries each server 
-to determine the installation path of the Secret Store service.
+server name and the installation directory of the Relativity Secret Store.
 
 .PARAMETER SecretStoreServers
 Specifies an array of server names where the Relativity Secret Store is installed. These servers will be 
@@ -17,7 +16,7 @@ Specifies the name of the SQL instance associated with the Secret Store. This in
 properties on each server object.
 
 .EXAMPLE
-$SecretStores = Get-RelativitySecretStore -SecretStoreServers @("Server1", "Server2") -SecretStoreSqlInstance "SQLInstanceName"
+$SecretStores = Get-RelativitySecretStoreServer -SecretStoreServers @("Server1", "Server2") -SecretStoreSqlInstance "SQLInstanceName"
 
 This example retrieves the configuration and installation details for SecretStore servers 'Server1' and 'Server2'.
 
@@ -34,7 +33,7 @@ The function relies on remote WMI queries to each server to determine the instal
 Relativity Secret Store service. Appropriate permissions and network access are required for these queries 
 to succeed. It is assumed that the Relativity Secret Store service name is consistent across installations.
 #>
-function Get-RelativitySecretStore
+function Get-RelativitySecretStoreServer
 {
     [CmdletBinding()]
     Param
@@ -49,7 +48,7 @@ function Get-RelativitySecretStore
 
     Begin
     {
-        Write-Verbose "Starting Get-RelativitySecretStore."
+        Write-Verbose "Starting Get-RelativitySecretStoreServer."
     }
     Process
     {
@@ -75,6 +74,7 @@ function Get-RelativitySecretStore
                 $InstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
                 $Server.ResponseFileProperties["InstallDir"] = $InstallDir
                 Write-Verbose "Retrieved InstallDir property for $($SecretStoreServer)."
+                
                 $Servers += $Server
             }
 
@@ -88,6 +88,6 @@ function Get-RelativitySecretStore
     }
     End
     {
-        Write-Verbose "Completed Get-RelativitySecretStore."
+        Write-Verbose "Completed Get-RelativitySecretStoreServer."
     }
 }

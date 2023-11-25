@@ -97,7 +97,7 @@ function Invoke-SqlQueryAsDataTable
 
             $DataAdapter = New-Object System.Data.SqlClient.SqlDataAdapter($Command)
             $DataTable = New-Object System.Data.DataTable
-            $DataAdapter.Fill($DataTable)
+            $DataAdapter.Fill($DataTable) | Out-Null
             Write-Verbose "Executed SQL query on $($SqlInstance)."
             return $DataTable
         } 

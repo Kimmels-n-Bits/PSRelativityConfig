@@ -18,7 +18,7 @@ function Get-RelativityInstance
     {
         Write-Verbose "Starting Get-RelativityInstance"
 
-        $GetInstanceSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "..\Private\Queries\Get-InstanceSettingValue.sql") -Raw
+        $GetInstanceSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "..\Private\Queries\Relativity\Get-InstanceSettingValue.sql") -Raw
         <#$GetPrimarySqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetPrimarySqlServerSettings.sql") -Raw
         $GetDistributedSqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetDistributedSqlServerSettings.sql") -Raw
         $GetRabbitMQServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetRabbitMQServerSettings.sql") -Raw
@@ -34,6 +34,7 @@ function Get-RelativityInstance
             $Parameters = @{
                 "@Section" = "kCura.LicenseManager"
                 "@Name" = "Instance"
+                "@MachineName" = ""
             }
             $InstanceName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
             
@@ -47,7 +48,11 @@ function Get-RelativityInstance
                 throw "No instance name was retrieved."
             }
             
-            Get-RelativitySecretStore -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
+            Get-RelativitySecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityPrimarySqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
             <#
