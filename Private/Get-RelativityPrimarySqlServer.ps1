@@ -9,7 +9,7 @@ default file repository, and database settings.
 
 .PARAMETER PrimarySqlInstance
 Specifies the primary SQL instance to query. This instance is used to gather data about the configuration and properties of 
-Relativity's primary SQL servers.
+Relativity's PrimarySql servers.
 
 .EXAMPLE
 $PrimarySqlServers = Get-RelativityPrimarySqlServer -PrimarySqlInstance "SQLInstanceName"
@@ -138,7 +138,7 @@ function Get-RelativityPrimarySqlServer
                 }
                 $RelativityInstanceName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
 
-                if ($null -eq $EddsFileShare)
+                if ($null -eq $RelativityInstanceName)
                 {
                     throw "No instance name was retrieved."
                 }

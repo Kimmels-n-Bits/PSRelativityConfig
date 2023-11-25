@@ -54,75 +54,31 @@ function Get-RelativityInstance
             Get-RelativityPrimarySqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
+
+            Get-RelativityDistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityServiceBusServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityWebServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityAgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityWorkerManagerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
+
+            Get-RelativityWorkerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+                $Instance.AddServer($_)
+            }
             <#
-            Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
-            
-            $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
-            $Connection = New-Object System.Data.SqlClient.SqlConnection($ConnectionString)
-            $Connection.Open()
-            $Command = $Connection.CreateCommand()
-            $Command.CommandText = $GetDistributedSqlServerSettingsQuery
-            $Adapter = New-Object System.Data.SqlClient.SqlDataAdapter($Command)
-            $ResultTable = New-Object System.Data.DataTable
-            $Adapter.Fill($ResultTable)
-
-            foreach ($Row in $ResultTable.Rows)
-            {
-                Write-Verbose "Adding DistributedSql server: $($Row['Name'])"
-                $Server = New-RelativityServer -Name $Row['Name']
-                $Server.SqlInstance = $Row['SqlInstance']
-                $Server.SqlPort = $Row['SqlPort']
-                $Server.SqlBackupDirectory = $Row['SqlBackupDirectory']
-                $Server.SqlLogDirectory = $Row['SqlLogDirectory']
-                $Server.SqlDataDirectory = $Row['SqlDataDirectory']
-                $Server.SqlFulltextDirectory = $Row['SqlFulltextDirectory']
-                $Server.UseWinAuth = $UseWinAuth
-                $Server.AddRole("DistributedSql")
-                $Instance.AddServer($Server)
-            }
-
-            $Connection.Close()
-
-            Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
-            
-            $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
-            $Connection = New-Object System.Data.SqlClient.SqlConnection($ConnectionString)
-            $Connection.Open()
-            $Command = $Connection.CreateCommand()
-            $Command.CommandText = $GetRabbitMQServerSettingsQuery
-            $Adapter = New-Object System.Data.SqlClient.SqlDataAdapter($Command)
-            $ResultTable = New-Object System.Data.DataTable
-            $Adapter.Fill($ResultTable)
-
-            foreach ($Row in $ResultTable.Rows)
-            {
-                $RabbitMQFQDN = $Row['RabbitMQFQDN']
-                $UserName = $Row['UserName']
-                $Password = $Row['Password']
-                $RabbitMQTLSEnabled = if ($Row['RabbitMQTLSEnabled'] -eq "True") { $true } else { $false }
-                $ServiceNamespace = $Row['ServiceNamespace']
-                $Protocol = if ($RabbitMQTLSEnabled) { "https" } else { "http" }
-                $HttpPort = if ($RabbitMQTLSEnabled) { 15671 } else { 15672 }
-                $Credential = New-Object System.Management.Automation.PSCredential -ArgumentList ($UserName, (ConvertTo-SecureString -String $Password -AsPlainText -Force))
-
-                $Instance.RabbitMQCredential = $Credential
-
-                $Nodes = Invoke-RestMethod -Uri "$($Protocol)://$($RabbitMQFQDN):$($HttpPort)/api/nodes" -Credential $Credential
-
-                foreach ($Node in ($Nodes | Select-Object name).name)
-                {
-                    $ServiceBusServer = $Node.Replace("rabbit@", "") 
-                    Write-Verbose "Adding ServiceBus server: $($ServiceBusServer)"
-                    $Server = New-RelativityServer -Name $ServiceBusServer
-                    $Server.ServiceNamespace = $ServiceNamespace
-                    $Server.RabbitMQTLSEnabled = $RabbitMQTLSEnabled
-                    $Server.AddRole("ServiceBus")
-                    $Instance.AddServer($Server)
-                }
-            }
-
-            $Connection.Close()
-
             Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
             
             $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
