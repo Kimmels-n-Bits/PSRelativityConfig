@@ -198,6 +198,7 @@ class RelativityServer
                             "UseWinAuth" { $this.ResponseFileProperties[$Property] = "1" }
                             "ServiceBusProvider" { $this.ResponseFileProperties[$Property] = "RabbitMQ" }
                             "EnableWinAuth" { $this.ResponseFileProperties[$Property] = "0" }
+                            "NISTPackagePath" { $this.ResponseFileProperties[$Property] = "C:\PSRelativityConfig\NISTPackage.zip" }
                             "DefaultAgents" { $this.ResponseFileProperties[$Property] = "0" }
                             "WorkerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\Worker\" }
                             "QueueManagerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\QueueManager\" }
