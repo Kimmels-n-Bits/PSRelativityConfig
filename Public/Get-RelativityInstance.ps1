@@ -19,8 +19,7 @@ function Get-RelativityInstance
         Write-Verbose "Starting Get-RelativityInstance"
 
         $GetInstanceSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "..\Private\Queries\Relativity\Get-InstanceSettingValue.sql") -Raw
-        <#$GetPrimarySqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetPrimarySqlServerSettings.sql") -Raw
-        $GetDistributedSqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetDistributedSqlServerSettings.sql") -Raw
+        <#$GetDistributedSqlServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetDistributedSqlServerSettings.sql") -Raw
         $GetRabbitMQServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetRabbitMQServerSettings.sql") -Raw
         $GetWebServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetWebServerSettings.sql") -Raw
         $GetAgentServerSettingsQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\GetAgentServerSettings.sql") -Raw
@@ -56,38 +55,6 @@ function Get-RelativityInstance
                 $Instance.AddServer($_)
             }
             <#
-            Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
-            
-            $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"
-            $Connection = New-Object System.Data.SqlClient.SqlConnection($ConnectionString)
-            $Connection.Open()
-            $Command = $Connection.CreateCommand()
-            $Command.CommandText = $GetPrimarySqlServerSettingsQuery
-            $Adapter = New-Object System.Data.SqlClient.SqlDataAdapter($Command)
-            $ResultTable = New-Object System.Data.DataTable
-            $Adapter.Fill($ResultTable)
-
-            foreach ($Row in $ResultTable.Rows)
-            {
-                Write-Verbose "Adding PrimarySql server: $($Row['Name'])"
-                $Server = New-RelativityServer -Name $Row['Name']
-                $Server.DefaultFileRepository = $Row['DefaultFileRepository']
-                $Server.EDDSFileShare = $Row['EDDSFileShare']
-                $Server.CacheLocation = $Row['CacheLocation']
-                $Server.DtSearchIndexPath = $Row['DtSearchIndexPath']
-                $Server.SqlInstance = $Row['SqlInstance']
-                $Server.SqlPort = $Row['SqlPort']
-                $Server.SqlBackupDirectory = $Row['SqlBackupDirectory']
-                $Server.SqlLogDirectory = $Row['SqlLogDirectory']
-                $Server.SqlDataDirectory = $Row['SqlDataDirectory']
-                $Server.SqlFulltextDirectory = $Row['SqlFulltextDirectory']
-                $Server.UseWinAuth = $UseWinAuth
-                $Server.AddRole("PrimarySql")
-                $Instance.AddServer($Server)
-            }
-
-            $Connection.Close()
-
             Write-Verbose "Connecting to SQL Server: $($PrimarySqlInstance)"
             
             $ConnectionString = "Server=$($PrimarySqlInstance);Integrated Security=True;"

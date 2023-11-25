@@ -60,7 +60,7 @@ function Get-RelativitySecretStoreServer
                 Write-Verbose "Adding SecretStore server: $($SecretStoreServer)."
                 $Server = New-RelativityServer -Name $SecretStoreServer
                 $Server.AddRole("SecretStore")
-                $Server.ResponseFileProperties["SqlInstanceServerName"] = $SecretStoreSqlInstance
+                $Server.SetProperty("SqlInstanceServerName", $SecretStoreSqlInstance)
 
                 Write-Verbose "Retrieving InstallDir property for $($SecretStoreServer)."
                 $ServicePathWithArguments = (Get-CimInstance -ComputerName $SecretStoreServer -ClassName "Win32_Service" -Filter 'Name = "Relativity Secret Store"').PathName
@@ -72,7 +72,7 @@ function Get-RelativitySecretStoreServer
 
                 $ServicePath = ($ServicePathWithArguments -replace "https://\*:.*$","").Trim().Trim('"')
                 $InstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
-                $Server.ResponseFileProperties["InstallDir"] = $InstallDir
+                $Server.SetProperty("InstallDir", $InstallDir)
                 Write-Verbose "Retrieved InstallDir property for $($SecretStoreServer)."
                 
                 $Servers += $Server

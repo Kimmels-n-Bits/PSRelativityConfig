@@ -66,7 +66,7 @@ function Get-RelativityPrimarySqlServer
                 Write-Verbose "Adding PrimarySql server: $($PrimarySqlServer['Name'])."
                 $Server = New-RelativityServer -Name $PrimarySqlServer['Name']
                 $Server.AddRole("PrimarySql")
-                $Server.ResponseFileProperties["PrimarySqlInstance"] = $PrimarySqlInstance
+                $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
                 Write-Verbose "Retrieving InstallDir property for $($PrimarySqlServer['Name'])."
                 $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $PrimarySqlServer['Name'])
@@ -78,7 +78,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No installation directory was retrieved."
                 }
 
-                $Server.ResponseFileProperties["InstallDir"] = $InstallDir
+                $Server.SetProperty("InstallDir", $InstallDir)
                 Write-Verbose "Retrieved InstallDir property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving DefaultFileRepository property for $($PrimarySqlServer['Name'])."
@@ -89,7 +89,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No default file repository was retrieved."
                 }
 
-                $Server.ResponseFileProperties["DefaultFileRepository"] = $DefaultFileRepository
+                $Server.SetProperty("DefaultFileRepository", $DefaultFileRepository)
                 Write-Verbose "Retrieved DefaultFileRepository property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving EddsFileShare property for $($PrimarySqlServer['Name'])."
@@ -105,7 +105,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No EDDS file share was retrieved."
                 }
                 
-                $Server.ResponseFileProperties["EddsFileShare"] = $EddsFileShare
+                $Server.SetProperty("EddsFileShare", $EddsFileShare)
                 Write-Verbose "Retrieved EddsFileShare property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving CacheLocation property for $($PrimarySqlServer['Name'])."
@@ -116,7 +116,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No cache location was retrieved."
                 }
 
-                $Server.ResponseFileProperties["CacheLocation"] = $CacheLocation
+                $Server.SetProperty("CacheLocation", $CacheLocation)
                 Write-Verbose "Retrieved CacheLocation property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
@@ -127,7 +127,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No dtSearch index path was retrieved."
                 }
 
-                $Server.ResponseFileProperties["DtSearchIndexPath"] = $DtSearchIndexPath
+                $Server.SetProperty("DtSearchIndexPath", $DtSearchIndexPath)
                 Write-Verbose "Retrieved DtSearchIndexPath property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving RelativityInstanceName property for $($PrimarySqlServer['Name'])."
@@ -143,7 +143,7 @@ function Get-RelativityPrimarySqlServer
                     throw "No instance name was retrieved."
                 }
                 
-                $Server.ResponseFileProperties["RelativityInstanceName"] = $RelativityInstanceName
+                $Server.SetProperty("RelativityInstanceName", $RelativityInstanceName)
                 Write-Verbose "Retrieved RelativityInstanceName property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
@@ -169,7 +169,7 @@ function Get-RelativityPrimarySqlServer
                     }
                 }
                 
-                $Server.ResponseFileProperties["DatabaseBackupDir"] = $DatabaseBackupDir
+                $Server.SetProperty("DatabaseBackupDir", $DatabaseBackupDir)
                 Write-Verbose "Retrieved DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving LdfDir property for $($PrimarySqlServer['Name'])."
@@ -195,7 +195,7 @@ function Get-RelativityPrimarySqlServer
                     }
                 }
                 
-                $Server.ResponseFileProperties["LdfDir"] = $LdfDir
+                $Server.SetProperty("LdfDir", $LdfDir)
                 Write-Verbose "Retrieved LdfDir property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving MdfDir property for $($PrimarySqlServer['Name'])."
@@ -221,7 +221,7 @@ function Get-RelativityPrimarySqlServer
                     }
                 }
                 
-                $Server.ResponseFileProperties["MdfDir"] = $MdfDir
+                $Server.SetProperty("MdfDir", $MdfDir)
                 Write-Verbose "Retrieved MdfDir property for $($PrimarySqlServer['Name'])."
 
                 Write-Verbose "Retrieving FullTextDir property for $($PrimarySqlServer['Name'])."
@@ -247,7 +247,7 @@ function Get-RelativityPrimarySqlServer
                     }
                 }
                 
-                $Server.ResponseFileProperties["FullTextDir"] = $FullTextDir
+                $Server.SetProperty("FullTextDir", $FullTextDir)
                 Write-Verbose "Retrieved FullTextDir property for $($PrimarySqlServer['Name'])."
 
                 $Servers += $Server
