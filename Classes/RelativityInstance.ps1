@@ -197,6 +197,7 @@ class RelativityServer
                             "InstallDir" { if ($role -eq [RelativityServerRole]::SecretStore) { $this.ResponseFileProperties[$Property] = "C:\Program Files\Relativity Secret Store\" } else { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Relativity\" } }
                             "UseWinAuth" { $this.ResponseFileProperties[$Property] = "1" }
                             "ServiceBusProvider" { $this.ResponseFileProperties[$Property] = "RabbitMQ" }
+                            "EnableWinAuth" { $this.ResponseFileProperties[$Property] = "0" }
                             "DefaultAgents" { $this.ResponseFileProperties[$Property] = "0" }
                             "WorkerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\Worker\" }
                             "QueueManagerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\QueueManager\" }

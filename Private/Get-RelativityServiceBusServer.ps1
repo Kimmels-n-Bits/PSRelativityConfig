@@ -4,7 +4,7 @@ Retrieves configured ServiceBus servers for Relativity and their properties.
 
 .DESCRIPTION
 The Get-RelativityServiceBusServer function is designed to retrieve a collection of ServiceBus server objects for 
-Relativity. Each server object includes its name, role, and additional properties suc as the installation directory,
+Relativity. Each server object includes its name, role, and additional properties such as the installation directory,
 ServiceBus namespace, TLS settings, and shared access keys.
 
 .PARAMETER PrimarySqlInstance
@@ -22,7 +22,7 @@ None.
 .OUTPUTS
 System.Object[]
 Returns an array of objects, each representing a configured ServiceBus server for Relativity. These objects 
-contain properties such as the server name, roles, ServiceBus provider, server FQDN, ServiceBus namespace, TLS enablement, 
+contain properties such as the server name, roles, server FQDN, ServiceBus namespace, TLS enablement, 
 and installation directory.
 
 .NOTES
@@ -159,7 +159,6 @@ function Get-RelativityServiceBusServer
                 $Server = New-RelativityServer -Name $ServiceBusServer
                 $Server.AddRole("ServiceBus")
                 $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
-                $Server.SetProperty("ServiceBusProvider", "RabbitMQ")
                 $Server.SetProperty("ServerFQDN", $ServerFQDN)
                 $Server.SetProperty("ServiceNamespace", $ServiceNamespace)
                 $Server.SetProperty("TlsEnabled", $TlsEnabled)
