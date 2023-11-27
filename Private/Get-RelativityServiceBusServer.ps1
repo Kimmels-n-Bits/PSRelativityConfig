@@ -41,117 +41,55 @@ function Get-RelativityServiceBusServer
         [String] $PrimarySqlInstance
     )
 
-    begin
+    Begin
     {
         Write-Verbose "Started Get-RelativityServiceBusServer."
     }
-    process
+    Process
     {
         try
         {
             $Servers = @()
 
             Write-Verbose "Retrieving ServerFQDN property for ServiceBus."
-            $Parameters = @{
-                "@Section" = "Relativity.ServiceBus"
-                "@Name" = "ServiceBusFullyQualifiedDomainName"
-                "@MachineName" = ""
-            }
-            $ServerFQDN = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-            if ($null -eq $ServerFQDN)
-            {
-                throw "No ServiceBus server fully qualified domain name was retrieved."
-            }
-            
-            Write-Verbose "Retrieved ServerFQDN property for ServiceBus."
+            $ServerFQDN = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceBusFullyQualifiedDomainName"
 
             Write-Verbose "Retrieving ServiceNamespace property for ServiceBus."
-            $Parameters = @{
-                "@Section" = "Relativity.ServiceBus"
-                "@Name" = "ServiceNamespace"
-                "@MachineName" = ""
-            }
-            $ServiceNamespace = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-            if ($null -eq $ServiceNamespace)
-            {
-                throw "No ServiceBus service namespace was retrieved."
-            }
-            
-            Write-Verbose "Retrieved ServiceNamespace property for ServiceBus."
-
-            Write-Verbose "Retrieving TlsEnabled property for ServiceBus."
-            $Parameters = @{
-                "@Section" = "Relativity.ServiceBus"
-                "@Name" = "EnableTLSForServiceBus"
-                "@MachineName" = ""
-            }
-            $TlsEnabled = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-            if ($null -eq $TlsEnabled)
-            {
-                throw "No ServiceBus TLS setting was retrieved."
-            }
-            
-            if ($TlsEnabled -eq "True")
-            {
-                $TlsEnabled = 1
-            }
-            else
-            {
-                $TlsEnabled = 0
-            }
-
-            Write-Verbose "Retrieved TlsEnabled property for ServiceBus."
-
-            Write-Verbose "Retrieving SharedAccessKeyName property for ServiceBus."
-            $Parameters = @{
-                "@Section" = "Relativity.ServiceBus"
-                "@Name" = "SharedAccessKeyName"
-                "@MachineName" = ""
-            }
-            $SharedAccessKeyName = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters
-
-            if ($null -eq $SharedAccessKeyName)
-            {
-                throw "No ServiceBus shared access key name was retrieved."
-            }
-            
-            Write-Verbose "Retrieved SharedAccessKeyName property for ServiceBus."
+            $ServiceNamespace = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceNamespace"
 
             Write-Verbose "Retrieving SharedAccessKey property for ServiceBus."
-            $Parameters = @{
-                "@Section" = "Relativity.ServiceBus"
-                "@Name" = "SharedAccessKey"
-                "@MachineName" = ""
-            }
-            $SharedAccessKey = (Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetInstanceSettingValueQuery -Parameters $Parameters | ConvertTo-SecureString -AsPlainText -Force)
+            $SharedAccessKey = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKey"
+            $SharedAccessKey = ($SharedAccessKey | ConvertTo-SecureString -AsPlainText -Force)
 
-            if ($null -eq $SharedAccessKey)
-            {
-                throw "No ServiceBus shared access key was retrieved."
-            }
+            Write-Verbose "Retrieving SharedAccessKeyName property for ServiceBus."
+            $SharedAccessKeyName = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKeyName"
+
+            Write-Verbose "Retrieving TlsEnabled property for ServiceBus."
+            $TlsEnabled = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "EnableTLSForServiceBus"
+
+            Write-Verbose "Validating retrieved properties for ServiceBus."
+            if ($null -eq $ServerFQDN) { throw "ServerFQDN property was not retrieved for ServiceBus." }
+            if ($null -eq $ServiceNamespace) { throw "ServiceNamespace property was not retrieved for ServiceBus." }
+            if ($null -eq $SharedAccessKey) { throw "SharedAccessKey property was not retrieved for ServiceBus." }
+            if ($null -eq $SharedAccessKeyName) { throw "SharedAccessKeyName property was not retrieved for ServiceBus." }
+            if ($null -eq $TlsEnabled) { throw "TlsEnabled property was not retrieved for ServiceBus." }
             
-            Write-Verbose "Retrieved SharedAccessKey property for ServiceBus."
-
-            Write-Verbose "Retrieving ServiceBus servers from $($ServerFQDN)."
-
-            if ($TlsEnabled -eq 1)
-            {
+            if ($TlsEnabled -eq "True")
+            { 
+                $TlsEnabled = 1
                 $Protocol = "https"
                 $Port = 15671
             }
             else
             {
+                $TlsEnabled = 0
                 $Protocol = "http"
                 $Port = 15672
             }
 
+            Write-Verbose "Retrieving ServiceBus servers from $($ServerFQDN)."
             $Credential = New-Object System.Management.Automation.PSCredential -ArgumentList ($SharedAccessKeyName, $SharedAccessKey)
             $ServiceBusServers = Invoke-RestMethod -Uri "$($Protocol)://$($ServerFQDN):$($Port)/api/nodes" -Credential $Credential
-
-            Write-Verbose "Retrieved ServiceBus servers from $($ServerFQDN)."
 
             foreach ($ServiceBusServer in ($ServiceBusServers).name.Replace("rabbit@", ""))
             {
@@ -160,24 +98,16 @@ function Get-RelativityServiceBusServer
 
                 if ($Server.IsOnline)
                 {
-                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $ServiceBusServer
+                    Write-Verbose "Retrieving InstallDir property for $($ServiceBusServer)."
+                    $InstallDir = Get-RegistryKeyValue -ServerName $ServiceBusServer -RegistryPath "SOFTWARE\\kCura\\Relativity\\FeaturePaths" -KeyName "BaseInstallDir"
+
+                    Write-Verbose "Setting properties for $($SecretStoreServer)."
                     $Server.AddRole("ServiceBus")
+                    if ($null -ne $InstallDir) { $Server.SetProperty("InstallDir", $InstallDir) }
                     $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
                     $Server.SetProperty("ServerFQDN", $ServerFQDN)
                     $Server.SetProperty("ServiceNamespace", $ServiceNamespace)
                     $Server.SetProperty("TlsEnabled", $TlsEnabled)
-
-                    Write-Verbose "Retrieving InstallDir property for $($ServiceBusServer)."
-                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ServiceBusServer)
-                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-
-                    if (-not $null -eq $RegistryKey)
-                    {
-                        $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
-                        $Server.SetProperty("InstallDir", $InstallDir)
-                    }
-
-                    Write-Verbose "Retrieved InstallDir property for $($ServiceBusServer)."
 
                     $Servers += $Server
                 }
@@ -195,7 +125,7 @@ function Get-RelativityServiceBusServer
             throw        
         }
     }
-    end
+    End
     {
         Write-Verbose "Completed Get-RelativityServiceBusServer."
     }

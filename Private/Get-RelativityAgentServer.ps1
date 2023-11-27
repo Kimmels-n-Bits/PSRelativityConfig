@@ -38,12 +38,12 @@ function Get-RelativityAgentServer
         [String] $PrimarySqlInstance
     )
 
-    begin
+    Begin
     {
         Write-Verbose "Started Get-RelativityAgentServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
     }
-    process
+    Process
     {
         try
         {
@@ -54,7 +54,6 @@ function Get-RelativityAgentServer
                 "@ServerType" = "Agent"
             }
             $AgentServers = Invoke-SqlQueryAsDataTable -SqlInstance $PrimarySqlInstance -Query $GetRelativityServersByTypeQuery -Parameters $Parameters
-            Write-Verbose "Retrieved Agent servers from $($PrimarySqlInstance)."
 
             foreach ($AgentServer in $AgentServers)
             {
@@ -63,22 +62,16 @@ function Get-RelativityAgentServer
 
                 if ($Server.IsOnline)
                 {
-                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $AgentServer['Name']
-                    $Server.AddRole("Agent")
-                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
-
                     Write-Verbose "Retrieving InstallDir property for $($AgentServer['Name'])."
-                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $AgentServer['Name'])
-                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Relativity\\FeaturePaths")
-                    $InstallDir = $RegistryKey.GetValue("BaseInstallDir")
+                    $InstallDir = Get-RegistryKeyValue -ServerName $AgentServer['Name'] -RegistryPath "SOFTWARE\\kCura\\Relativity\\FeaturePaths" -KeyName "BaseInstallDir"
 
-                    if ($null -eq $InstallDir)
-                    {
-                        throw "No installation directory was retrieved."
-                    }
+                    Write-Verbose "Validating retrieved properties for $($AgentServer['Name'])."
+                    if ($null -eq $InstallDir) { throw "InstallDir property was not retrieved for $($AgentServer['Name'])." }
 
+                    Write-Verbose "Setting properties for $($AgentServer['Name'])."
+                    $Server.AddRole("Agent")
                     $Server.SetProperty("InstallDir", $InstallDir)
-                    Write-Verbose "Retrieved InstallDir property for $($AgentServer['Name'])."
+                    $Server.SetProperty("PrimarySqlInstance", $PrimarySqlInstance)
 
                     $Servers += $Server
                 }
@@ -96,7 +89,7 @@ function Get-RelativityAgentServer
             throw        
         }
     }
-    end
+    End
     {
         Write-Verbose "Completed Get-RelativityAgentServer."
     }

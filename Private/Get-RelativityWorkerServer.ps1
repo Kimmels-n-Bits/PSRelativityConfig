@@ -54,7 +54,6 @@ function Get-RelativityWorkerServer
                 "@ServerType" = "Worker"
             }
             $WorkerServers = Invoke-SqlQueryAsDataTable -SqlInstance $PrimarySqlInstance -Query $GetRelativityServersByTypeQuery -Parameters $Parameters
-            Write-Verbose "Retrieved Worker servers from $($PrimarySqlInstance)."
 
             foreach ($WorkerServer in $WorkerServers)
             {
@@ -63,33 +62,21 @@ function Get-RelativityWorkerServer
 
                 if ($Server.IsOnline)
                 {
-                    Start-RemoteService -ServiceName "RemoteRegistry" -ServerName $WorkerServer['Name']
-                    $Server.AddRole("Worker")
-                    $Server.SetProperty("RelativitySqlInstance", $PrimarySqlInstance)
-
                     Write-Verbose "Retrieving SqlInstance property for $($WorkerServer['Name'])."
-                    $Registry = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $WorkerServer['Name'])
-                    $RegistryKey = $Registry.OpenSubKey("SOFTWARE\\kCura\\Invariant")
-                    $SqlInstance = $RegistryKey.GetValue("SQLInstance_W")
-
-                    if ($null -eq $SqlInstance)
-                    {
-                        throw "No SQL instance was retrieved."
-                    }
-
-                    $Server.SetProperty("SqlInstance", $SqlInstance)
-                    Write-Verbose "Retrieved SqlInstance property for $($WorkerServer['Name'])."
+                    $SqlInstance = Get-RegistryKeyValue -ServerName $WorkerServer['Name'] -RegistryPath "SOFTWARE\\kCura\\Invariant" -KeyName "SQLInstance_W"
 
                     Write-Verbose "Retrieving WorkerInstallPath property for $($WorkerServer['Name'])."
-                    $WorkerInstallPath = $RegistryKey.GetValue("Path")
+                    $WorkerInstallPath = Get-RegistryKeyValue -ServerName $WorkerServer['Name'] -RegistryPath "SOFTWARE\\kCura\\Invariant" -KeyName "Path"
 
-                    if ($null -eq $WorkerInstallPath)
-                    {
-                        throw "No worker install path was retrieved."
-                    }
+                    Write-Verbose "Validating retrieved properties for $($WorkerServer['Name'])."
+                    if ($null -eq $SqlInstance) { throw "SqlInstance property was not retrieved for $($WorkerServer['Name'])." }
+                    if ($null -eq $WorkerInstallPath) { throw "WorkerInstallPath property was not retrieved for $($WorkerServer['Name'])." }
 
+                    Write-Verbose "Setting properties for $($WorkerServer['Name'])."
+                    $Server.AddRole("Worker")
+                    $Server.SetProperty("RelativitySqlInstance", $PrimarySqlInstance)
+                    $Server.SetProperty("SqlInstance", $SqlInstance)
                     $Server.SetProperty("WorkerInstallPath", $WorkerInstallPath)
-                    Write-Verbose "Retrieved WorkerInstallPath property for $($WorkerServer['Name'])."
 
                     $Servers += $Server
                 }
