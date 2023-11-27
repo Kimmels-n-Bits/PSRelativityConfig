@@ -3,7 +3,7 @@
 Retrieves configured ServiceBus servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityServiceBusServer function is designed to retrieve a collection of ServiceBus server objects for 
+The Get-ServiceBusServer function is designed to retrieve a collection of ServiceBus server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the installation directory,
 ServiceBus namespace, TLS settings, and shared access keys.
 
@@ -12,7 +12,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's ServiceBus servers.
 
 .EXAMPLE
-$ServiceBusServers = Get-RelativityServiceBusServer -PrimarySqlInstance "SQLInstanceName"
+$ServiceBusServers = Get-ServiceBusServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of ServiceBus servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -31,7 +31,7 @@ ServiceBus server. Adequate permissions for SQL query execution and REST API acc
 remote registry settings for installation directory information. Adequate permissions and network access are required to
 successfully execute these operations.
 #>
-function Get-RelativityServiceBusServer
+function Get-ServiceBusServer
 {
     [CmdletBinding()]
     Param
@@ -43,7 +43,7 @@ function Get-RelativityServiceBusServer
 
     Begin
     {
-        Write-Verbose "Started Get-RelativityServiceBusServer."
+        Write-Verbose "Started Get-ServiceBusServer."
     }
     Process
     {
@@ -52,20 +52,20 @@ function Get-RelativityServiceBusServer
             $Servers = @()
 
             Write-Verbose "Retrieving ServerFQDN property for ServiceBus."
-            $ServerFQDN = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceBusFullyQualifiedDomainName"
+            $ServerFQDN = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceBusFullyQualifiedDomainName"
 
             Write-Verbose "Retrieving ServiceNamespace property for ServiceBus."
-            $ServiceNamespace = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceNamespace"
+            $ServiceNamespace = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "ServiceNamespace"
 
             Write-Verbose "Retrieving SharedAccessKey property for ServiceBus."
-            $SharedAccessKey = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKey"
+            $SharedAccessKey = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKey"
             $SharedAccessKey = ($SharedAccessKey | ConvertTo-SecureString -AsPlainText -Force)
 
             Write-Verbose "Retrieving SharedAccessKeyName property for ServiceBus."
-            $SharedAccessKeyName = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKeyName"
+            $SharedAccessKeyName = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "SharedAccessKeyName"
 
             Write-Verbose "Retrieving TlsEnabled property for ServiceBus."
-            $TlsEnabled = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "EnableTLSForServiceBus"
+            $TlsEnabled = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.ServiceBus" -Name "EnableTLSForServiceBus"
 
             Write-Verbose "Validating retrieved properties for ServiceBus."
             if ($null -eq $ServerFQDN) { throw "ServerFQDN property was not retrieved for ServiceBus." }
@@ -127,6 +127,6 @@ function Get-RelativityServiceBusServer
     }
     End
     {
-        Write-Verbose "Completed Get-RelativityServiceBusServer."
+        Write-Verbose "Completed Get-ServiceBusServer."
     }
 }

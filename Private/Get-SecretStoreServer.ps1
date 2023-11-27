@@ -3,7 +3,7 @@
 Retrieves configured SecretStore servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativitySecretStoreServer function is designed to retrieve a collection of SecretStore server objects for 
+The Get-SecretStoreServer function is designed to retrieve a collection of SecretStore server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the SQL instance 
 server name and the installation directory of the Relativity Secret Store.
 
@@ -16,7 +16,7 @@ Specifies the name of the SQL instance associated with the Secret Store. This in
 properties on each server object.
 
 .EXAMPLE
-$SecretStores = Get-RelativitySecretStoreServer -SecretStoreServers @("Server1", "Server2") -SecretStoreSqlInstance "SQLInstanceName"
+$SecretStores = Get-SecretStoreServer -SecretStoreServers @("Server1", "Server2") -SecretStoreSqlInstance "SQLInstanceName"
 
 This example retrieves the configuration and installation details for SecretStore servers 'Server1' and 'Server2'.
 
@@ -33,7 +33,7 @@ The function relies on remote WMI queries to each server to determine the instal
 Relativity Secret Store service. Appropriate permissions and network access are required for these queries 
 to succeed. It is assumed that the Relativity Secret Store service name is consistent across installations.
 #>
-function Get-RelativitySecretStoreServer
+function Get-SecretStoreServer
 {
     [CmdletBinding()]
     Param
@@ -48,7 +48,7 @@ function Get-RelativitySecretStoreServer
 
     Begin
     {
-        Write-Verbose "Starting Get-RelativitySecretStoreServer."
+        Write-Verbose "Started Get-SecretStoreServer."
     }
     Process
     {
@@ -93,6 +93,6 @@ function Get-RelativitySecretStoreServer
     }
     End
     {
-        Write-Verbose "Completed Get-RelativitySecretStoreServer."
+        Write-Verbose "Completed Get-SecretStoreServer."
     }
 }

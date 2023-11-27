@@ -3,7 +3,7 @@
 Retrieves configured DistributedSql servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityDistributedSqlServer function is designed to retrieve a collection of DistributedSql server objects for 
+The Get-DistributedSqlServer function is designed to retrieve a collection of DistributedSql server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the installation directory, 
 and database settings.
 
@@ -12,7 +12,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's DistributedSql servers.
 
 .EXAMPLE
-$DistributedSqlServers = Get-RelativityDistributedSqlServer -PrimarySqlInstance "SQLInstanceName"
+$DistributedSqlServers = Get-DistributedSqlServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of DistributedSql servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -29,7 +29,7 @@ This function performs complex data retrieval, including running multiple SQL qu
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityDistributedSqlServer
+function Get-DistributedSqlServer
 {
     [CmdletBinding()]
     Param
@@ -41,7 +41,7 @@ function Get-RelativityDistributedSqlServer
 
     Begin
     {
-        Write-Verbose "Started Get-RelativityDistributedSqlServer."
+        Write-Verbose "Started Get-DistributedSqlServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
         $GetDistributedSqlInstanceNameQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-DistributedSqlInstanceName.sql") -Raw
     }
@@ -65,7 +65,7 @@ function Get-RelativityDistributedSqlServer
                 if ($Server.IsOnline)
                 {
                     Write-Verbose "Retrieving DatabaseBackupDir property for $($DistributedSqlServer['Name'])."
-                    $DatabaseBackupDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "BackupDirectory" -MachineName $DistributedSqlServer['Name']
+                    $DatabaseBackupDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "BackupDirectory" -MachineName $DistributedSqlServer['Name']
 
                     Write-Verbose "Retrieving DistributedSqlInstance property for $($DistributedSqlServer['Name'])."
                     $Parameters = @{
@@ -74,16 +74,16 @@ function Get-RelativityDistributedSqlServer
                     $DistributedSqlInstance = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDistributedSqlInstanceNameQuery -Parameters $Parameters
 
                     Write-Verbose "Retrieving FullTextDir property for $($DistributedSqlServer['Name'])."
-                    $FullTextDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "FTDirectory" -MachineName $DistributedSqlServer['Name']
+                    $FullTextDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "FTDirectory" -MachineName $DistributedSqlServer['Name']
 
                     Write-Verbose "Retrieving InstallDir property for $($DistributedSqlServer['Name'])."
                     $InstallDir = Get-RegistryKeyValue -ServerName $DistributedSqlServer['Name'] -RegistryPath "SOFTWARE\\kCura\\Relativity\\FeaturePaths" -KeyName "BaseInstallDir"
 
                     Write-Verbose "Retrieving LdfDir property for $($DistributedSqlServer['Name'])."
-                    $LdfDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "LDFDirectory" -MachineName $DistributedSqlServer['Name']
+                    $LdfDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "LDFDirectory" -MachineName $DistributedSqlServer['Name']
 
                     Write-Verbose "Retrieving MdfDir property for $($DistributedSqlServer['Name'])."
-                    $MdfDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "DataDirectory" -MachineName $DistributedSqlServer['Name']
+                    $MdfDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "DataDirectory" -MachineName $DistributedSqlServer['Name']
 
                     Write-Verbose "Validating retrieved properties for $($DistributedSqlServer['Name'])."
                     if ($null -eq $DatabaseBackupDir) { throw "DatabaseBackupDir property was not retrieved for $($DistributedSqlServer['Name'])."}
@@ -121,6 +121,6 @@ function Get-RelativityDistributedSqlServer
     }
     End
     {
-        Write-Verbose "Completed Get-RelativityDistributedSqlServer."
+        Write-Verbose "Completed Get-DistributedSqlServer."
     }
 }

@@ -3,7 +3,7 @@
 Retrieves configured Worker Manager servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityWorkerManagerServer function is designed to retrieve a collection of Worker Manager server objects for 
+The Get-WorkerManagerServer function is designed to retrieve a collection of Worker Manager server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the data files network path, 
 dtSearch index path, SQL instance, SQL data and log directories, worker network path, queue manager install path, and identity server URL.
 
@@ -12,7 +12,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's Worker Manager servers.
 
 .EXAMPLE
-$WorkerManagerServers = Get-RelativityWorkerManagerServer -PrimarySqlInstance "SQLInstanceName"
+$WorkerManagerServers = Get-WorkerManagerServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of Worker Manager servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -29,7 +29,7 @@ This function performs complex data retrieval, including running multiple SQL qu
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityWorkerManagerServer
+function Get-WorkerManagerServer
 {
     [CmdletBinding()]
     Param
@@ -41,7 +41,7 @@ function Get-RelativityWorkerManagerServer
 
     begin
     {
-        Write-Verbose "Started Get-RelativityWorkerManagerServer."
+        Write-Verbose "Started Get-WorkerManagerServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
         $GetAppSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Invariant\Get-AppSettingValue.sql") -Raw
     }
@@ -134,6 +134,6 @@ function Get-RelativityWorkerManagerServer
     }
     end
     {
-        Write-Verbose "Completed Get-RelativityWorkerManagerServer."
+        Write-Verbose "Completed Get-WorkerManagerServer."
     }
 }

@@ -73,7 +73,7 @@ function Invoke-SqlQueryAsDataTable
 
     Begin
     {
-        Write-Verbose "Starting Invoke-SqlQueryAsDataTable."
+        Write-Verbose "Started Invoke-SqlQueryAsDataTable."
     }
     Process 
     {

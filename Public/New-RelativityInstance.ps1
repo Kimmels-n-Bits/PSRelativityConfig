@@ -80,7 +80,7 @@ function New-RelativityInstance
 
     Begin
     {
-        Write-Verbose "Starting New-RelativityInstance"
+        Write-Verbose "Started New-RelativityInstance."
     }
     Process
     {
@@ -128,6 +128,6 @@ function New-RelativityInstance
     }
     End
     {
-        Write-Verbose "Completed New-RelativityInstance"
+        Write-Verbose "Completed New-RelativityInstance."
     }
 }

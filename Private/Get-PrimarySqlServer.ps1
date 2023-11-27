@@ -3,7 +3,7 @@
 Retrieves configured PrimarySql servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityPrimarySqlServer function is designed to retrieve a collection of PrimarySql server objects for 
+The Get-PrimarySqlServer function is designed to retrieve a collection of PrimarySql server objects for 
 Relativity. Each server object includes its name, role, and additional properties such as the installation directory, 
 default file repository, and database settings. 
 
@@ -12,7 +12,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's PrimarySql servers.
 
 .EXAMPLE
-$PrimarySqlServers = Get-RelativityPrimarySqlServer -PrimarySqlInstance "SQLInstanceName"
+$PrimarySqlServers = Get-PrimarySqlServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of primary SQL servers from the specified SQL instance "SQLInstanceName".
 
@@ -29,7 +29,7 @@ This function performs complex data retrieval including running multiple SQL que
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityPrimarySqlServer
+function Get-PrimarySqlServer
 {
     [CmdletBinding()]
     Param
@@ -41,7 +41,7 @@ function Get-RelativityPrimarySqlServer
 
     Begin
     {
-        Write-Verbose "Started Get-RelativityPrimarySqlServer."
+        Write-Verbose "Started Get-PrimarySqlServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
         $GetDefaultFileRepositoryQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-DefaultFileRepository.sql") -Raw
         $GetCacheLocationQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-CacheLocation.sql") -Raw
@@ -70,7 +70,7 @@ function Get-RelativityPrimarySqlServer
                     $CacheLocation = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetCacheLocationQuery
 
                     Write-Verbose "Retrieving DatabaseBackupDir property for $($PrimarySqlServer['Name'])."
-                    $DatabaseBackupDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "BackupDirectory" -MachineName $PrimarySqlServer['Name']
+                    $DatabaseBackupDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "BackupDirectory" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Retrieving DefaultFileRepository property for $($PrimarySqlServer['Name'])."
                     $DefaultFileRepository = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDefaultFileRepositoryQuery
@@ -79,22 +79,22 @@ function Get-RelativityPrimarySqlServer
                     $DtSearchIndexPath = Invoke-SqlQueryAsScalar -SqlInstance $PrimarySqlInstance -Query $GetDtSearchIndexPathQuery
 
                     Write-Verbose "Retrieving EddsFileShare property for $($PrimarySqlServer['Name'])."
-                    $EddsFileShare = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.Data" -Name "EDDSFileShare" -MachineName $PrimarySqlServer['Name']
+                    $EddsFileShare = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "Relativity.Data" -Name "EDDSFileShare" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Retrieving FullTextDir property for $($PrimarySqlServer['Name'])."
-                    $FullTextDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "FTDirectory" -MachineName $PrimarySqlServer['Name']
+                    $FullTextDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "FTDirectory" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Retrieving LdfDir property for $($PrimarySqlServer['Name'])."
-                    $LdfDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "LDFDirectory" -MachineName $PrimarySqlServer['Name']
+                    $LdfDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "LDFDirectory" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Retrieving MdfDir property for $($PrimarySqlServer['Name'])."
-                    $MdfDir = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "DataDirectory" -MachineName $PrimarySqlServer['Name']
+                    $MdfDir = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.EDDS.SqlServer" -Name "DataDirectory" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Retrieving InstallDir property for $($PrimarySqlServer['Name'])."
                     $InstallDir = Get-RegistryKeyValue -ServerName $PrimarySqlServer['Name'] -RegistryPath "SOFTWARE\\kCura\\Relativity\\FeaturePaths" -KeyName "BaseInstallDir"
 
                     Write-Verbose "Retrieving RelativityInstanceName property for $($PrimarySqlServer['Name'])."
-                    $RelativityInstanceName = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.LicenseManager" -Name "Instance" -MachineName $PrimarySqlServer['Name']
+                    $RelativityInstanceName = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.LicenseManager" -Name "Instance" -MachineName $PrimarySqlServer['Name']
 
                     Write-Verbose "Validating retrieved properties for $($PrimarySqlServer['Name'])."
                     if ($null -eq $CacheLocation) { throw "CacheLocation property was not retrieved for $($PrimarySqlServer['Name'])." }
@@ -140,6 +140,6 @@ function Get-RelativityPrimarySqlServer
     }
     End
     {
-        Write-Verbose "Completed Get-RelativityPrimarySqlServer."
+        Write-Verbose "Completed Get-PrimarySqlServer."
     }
 }

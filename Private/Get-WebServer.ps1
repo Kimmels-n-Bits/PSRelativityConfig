@@ -3,7 +3,7 @@
 Retrieves configured Web servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityWebServer function is designed to retrieve a collection of Web server objects for Relativity. 
+The Get-WebServer function is designed to retrieve a collection of Web server objects for Relativity. 
 Each server object includes its name, role, and additional properties such as the installation directory and 
 Windows Authentication settings.
 
@@ -12,7 +12,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's Web servers.
 
 .EXAMPLE
-$WebServers = Get-RelativityWebServer -PrimarySqlInstance "SQLInstanceName"
+$WebServers = Get-WebServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of Web servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -29,7 +29,7 @@ This function performs complex data retrieval, including running multiple SQL qu
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityWebServer
+function Get-WebServer
 {
     [CmdletBinding()]
     Param
@@ -41,7 +41,7 @@ function Get-RelativityWebServer
 
     begin
     {
-        Write-Verbose "Started Get-RelativityWebServer."
+        Write-Verbose "Started Get-WebServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
         $GetWebEnableWinAuthQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-WebEnableWinAuth.sql") -Raw
     }
@@ -101,6 +101,6 @@ function Get-RelativityWebServer
     }
     end
     {
-        Write-Verbose "Completed Get-RelativityWebServer."
+        Write-Verbose "Completed Get-WebServer."
     }
 }

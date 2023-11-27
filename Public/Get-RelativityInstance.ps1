@@ -54,7 +54,7 @@ function Get-RelativityInstance
 
     Begin
     {
-        Write-Verbose "Starting Get-RelativityInstance"
+        Write-Verbose "Started Get-RelativityInstance."
         Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Starting..." -PercentComplete 0.00
     }
     Process
@@ -62,7 +62,7 @@ function Get-RelativityInstance
         try
         {
             Write-Verbose "Retrieving Relativity instance name from $($PrimarySqlInstance)."
-            $InstanceName = Get-RelativityInstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.LicenseManager" -Name "Instance"
+            $InstanceName = Get-InstanceSetting -SqlInstance $PrimarySqlInstance -Section "kCura.LicenseManager" -Name "Instance"
             
             if ($null -ne $InstanceName)
             {
@@ -75,42 +75,42 @@ function Get-RelativityInstance
             }
             
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Agent Servers..." -PercentComplete 0.00
-            Get-RelativityAgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-AgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing DistributedSql Servers..." -PercentComplete 12.50
-            Get-RelativityDistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-DistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing PrimarySql Servers..." -PercentComplete 25.00
-            Get-RelativityPrimarySqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-PrimarySqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing SecretStore Servers..." -PercentComplete 37.50
-            Get-RelativitySecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
+            Get-SecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing ServiceBus Servers..." -PercentComplete 50.00
-            Get-RelativityServiceBusServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-ServiceBusServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Web Servers..." -PercentComplete 62.50
-            Get-RelativityWebServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-WebServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing WorkerManager Servers..." -PercentComplete 75.00
-            Get-RelativityWorkerManagerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-WorkerManagerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
             Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Worker Servers..." -PercentComplete 87.50
-            Get-RelativityWorkerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
+            Get-WorkerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
@@ -125,6 +125,6 @@ function Get-RelativityInstance
     End
     {
         Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Completed" -Completed
-        Write-Verbose "Completed Get-RelativityInstance"
+        Write-Verbose "Completed Get-RelativityInstance."
     }
 }

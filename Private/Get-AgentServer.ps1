@@ -3,7 +3,7 @@
 Retrieves configured Agent servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityAgentServer function is designed to retrieve a collection of Agent server objects for Relativity. 
+The Get-AgentServer function is designed to retrieve a collection of Agent server objects for Relativity. 
 Each server object includes its name, role, and additional properties such as the installation directory.
 
 .PARAMETER PrimarySqlInstance
@@ -11,7 +11,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's Agent servers.
 
 .EXAMPLE
-$AgentServers = Get-RelativityAgentServer -PrimarySqlInstance "SQLInstanceName"
+$AgentServers = Get-AgentServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of Agent servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -28,7 +28,7 @@ This function performs complex data retrieval, including running multiple SQL qu
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityAgentServer
+function Get-AgentServer
 {
     [CmdletBinding()]
     Param
@@ -40,7 +40,7 @@ function Get-RelativityAgentServer
 
     Begin
     {
-        Write-Verbose "Started Get-RelativityAgentServer."
+        Write-Verbose "Started Get-AgentServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
     }
     Process
@@ -91,6 +91,6 @@ function Get-RelativityAgentServer
     }
     End
     {
-        Write-Verbose "Completed Get-RelativityAgentServer."
+        Write-Verbose "Completed Get-AgentServer."
     }
 }

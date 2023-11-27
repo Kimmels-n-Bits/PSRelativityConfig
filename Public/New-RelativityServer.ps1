@@ -39,7 +39,7 @@ function New-RelativityServer
 
     Begin
     {
-        Write-Verbose "Starting New-RelativityServer."
+        Write-Verbose "Started New-RelativityServer."
     }
     Process
     {

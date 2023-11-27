@@ -72,7 +72,7 @@ function Invoke-SqlQueryAsScalar
 
     Begin
     {
-        Write-Verbose "Starting Invoke-SqlQueryAsScalar."
+        Write-Verbose "Started Invoke-SqlQueryAsScalar."
     }
     Process
     {

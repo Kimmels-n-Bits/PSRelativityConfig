@@ -3,7 +3,7 @@
 Retrieves configured Worker servers for Relativity and their properties.
 
 .DESCRIPTION
-The Get-RelativityWorkerServer function is designed to retrieve a collection of Worker server objects for Relativity. 
+The Get-WorkerServer function is designed to retrieve a collection of Worker server objects for Relativity. 
 Each server object includes its name, role, and additional properties such as the SQL instance and worker install path. 
 
 .PARAMETER PrimarySqlInstance
@@ -11,7 +11,7 @@ Specifies the primary SQL instance to query. This instance is used to gather dat
 Relativity's Worker servers.
 
 .EXAMPLE
-$WorkerServers = Get-RelativityWorkerServer -PrimarySqlInstance "SQLInstanceName"
+$WorkerServers = Get-WorkerServer -PrimarySqlInstance "SQLInstanceName"
 
 This example retrieves configuration details of Worker servers from the specified primary SQL instance "SQLInstanceName".
 
@@ -28,7 +28,7 @@ This function performs complex data retrieval, including running multiple SQL qu
 accessing remote registry settings on each identified server. Adequate permissions and network access are required to successfully 
 execute these operations.
 #>
-function Get-RelativityWorkerServer
+function Get-WorkerServer
 {
     [CmdletBinding()]
     Param
@@ -40,7 +40,7 @@ function Get-RelativityWorkerServer
 
     begin
     {
-        Write-Verbose "Started Get-RelativityWorkerServer."
+        Write-Verbose "Started Get-WorkerServer."
         $GetRelativityServersByTypeQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-RelativityServersByType.sql") -Raw
     }
     process
@@ -96,6 +96,6 @@ function Get-RelativityWorkerServer
     }
     end
     {
-        Write-Verbose "Completed Get-RelativityWorkerServer."
+        Write-Verbose "Completed Get-WorkerServer."
     }
 }

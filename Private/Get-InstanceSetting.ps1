@@ -3,7 +3,7 @@
 Retrieves a specific instance setting from a Relativity environment.
 
 .DESCRIPTION
-The Get-RelativityInstanceSetting function queries a Relativity SQL database to retrieve the value of a specified 
+The Get-InstanceSetting function queries a Relativity SQL database to retrieve the value of a specified 
 instance setting.
 
 .PARAMETER SqlInstance
@@ -21,7 +21,7 @@ Specifies the name of the instance setting to be retrieved.
 is found for the given machine name, the function queries for a general setting with an empty machine name.
 
 .EXAMPLE
-$InstanceSetting = Get-RelativityInstanceSetting -SqlInstance "SQLInstanceName" -Section "kCura.LicenseManager" -Name "Instance"
+$InstanceSetting = Get-InstanceSetting -SqlInstance "SQLInstanceName" -Section "kCura.LicenseManager" -Name "Instance"
 
 This example retrieves the value of the 'Instance' setting from the 'kCura.LicenseManager' section of the instance settings 
 in the specified SQL instance.
@@ -38,7 +38,7 @@ This function performs a SQL query against the specified SQL instance and requir
 the instance settings. It is designed to handle situations where machine-specific settings might not exist and will 
 fallback to general settings if needed.
 #>
-function Get-RelativityInstanceSetting
+function Get-InstanceSetting
 {
     [CmdletBinding()]
     Param
@@ -59,7 +59,7 @@ function Get-RelativityInstanceSetting
 
     Begin
     {
-        Write-Verbose "Started Get-RelativityInstanceSetting."
+        Write-Verbose "Started Get-InstanceSetting."
         $GetInstanceSettingValueQuery = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath "Queries\Relativity\Get-InstanceSettingValue.sql") -Raw
     }
     Process
@@ -91,6 +91,6 @@ function Get-RelativityInstanceSetting
     }
     End
     {
-        Write-Verbose "Completed Get-RelativityInstanceSetting."
+        Write-Verbose "Completed Get-InstanceSetting."
     }
 }
