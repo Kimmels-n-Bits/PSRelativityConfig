@@ -49,13 +49,22 @@ function Get-RelativityInstance
         [String[]] $SecretStoreServers,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String] $SecretStoreSqlInstance
+        [String] $SecretStoreSqlInstance,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [PSCredential] $ServiceAccountCredential,
+        [ValidateNotNull()]
+        [Parameter(Mandatory = $true)]
+        [PSCredential] $EDDSDBOCredential,
+        [ValidateNotNull()]
+        [Parameter(Mandatory = $true)]
+        [PSCredential] $RabbitMQCredential
     )
 
     Begin
     {
         Write-Verbose "Started Get-RelativityInstance."
-        Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Starting..." -PercentComplete 0.00
+        Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Starting..." -PercentComplete 0.00
     }
     Process
     {
@@ -67,49 +76,49 @@ function Get-RelativityInstance
             if ($null -ne $InstanceName)
             {
                 Write-Verbose "Retrieved Relativity instance $($InstanceName) from $($PrimarySqlInstance)."
-                $Instance = New-RelativityInstance -Name $InstanceName
+                $Instance = New-RelativityInstance -Name $InstanceName -ServiceAccountCredential $ServiceAccountCredential -EDDSDBOCredential $EDDSDBOCredential -RabbitMQCredential $RabbitMQCredential
             }
             else 
             {
                 throw "No instance name was retrieved."
             }
             
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Agent Servers..." -PercentComplete 0.00
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Agent Servers..." -PercentComplete 0.00
             Get-AgentServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing DistributedSql Servers..." -PercentComplete 12.50
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing DistributedSql Servers..." -PercentComplete 12.50
             Get-DistributedSqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing PrimarySql Servers..." -PercentComplete 25.00
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing PrimarySql Servers..." -PercentComplete 25.00
             Get-PrimarySqlServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing SecretStore Servers..." -PercentComplete 37.50
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing SecretStore Servers..." -PercentComplete 37.50
             Get-SecretStoreServer -SecretStoreServers $SecretStoreServers -SecretStoreSqlInstance $SecretStoreSqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing ServiceBus Servers..." -PercentComplete 50.00
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing ServiceBus Servers..." -PercentComplete 50.00
             Get-ServiceBusServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Web Servers..." -PercentComplete 62.50
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Web Servers..." -PercentComplete 62.50
             Get-WebServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing WorkerManager Servers..." -PercentComplete 75.00
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing WorkerManager Servers..." -PercentComplete 75.00
             Get-WorkerManagerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
 
-            Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Worker Servers..." -PercentComplete 87.50
+            Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Processing Worker Servers..." -PercentComplete 87.50
             Get-WorkerServer -PrimarySqlInstance $PrimarySqlInstance | ForEach-Object {
                 $Instance.AddServer($_)
             }
@@ -124,7 +133,7 @@ function Get-RelativityInstance
     }
     End
     {
-        Write-Progress -Activity "Retrieving Relativity Instance Configuration" -Status "Completed" -Completed
+        Write-Progress -Id 1 -Activity "Retrieving Relativity Instance Configuration" -Status "Completed" -Completed
         Write-Verbose "Completed Get-RelativityInstance."
     }
 }

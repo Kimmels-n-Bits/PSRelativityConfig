@@ -30,20 +30,23 @@ class RelativityInstance
     [String] $FriendlyName
     [ValidateNotNull()]
     [RelativityServer[]] $Servers
+    [ValidateNotNullOrEmpty()]
+    [String] $InstallerDirectory
     [ValidateNotNull()]
-    [PSCredential] $ServiceAccountWindowsCredential
+    [PSCredential] $ServiceAccountCredential
     [ValidateNotNull()]
-    [PSCredential] $EDDSDBOSqlCredential
-    [ValidateNotNull()]
-    [PSCredential] $ServiceAccountSqlCredential
+    [PSCredential] $EDDSDBOCredential
     [ValidateNotNull()]
     [PSCredential] $RabbitMQCredential
-    [ValidateNotNull()]
-    [PSCredential] $AdminUserRelativityCredential
-    [ValidateNotNull()]
-    [PSCredential] $ServiceAccountRelativityCredential
 
-    RelativityInstance([String] $name, [String] $friendlyName = $null)
+    RelativityInstance(
+        [String] $name,
+        [String] $friendlyName,
+        [String] $installerDirectory,
+        [PSCredential] $serviceAccountCredential,
+        [PSCredential] $eddsdboCredential,
+        [PSCredential] $rabbitMQCredential
+        )
     {
         try
         {
@@ -60,11 +63,15 @@ class RelativityInstance
             }
 
             $this.Servers = @()
+            $this.InstallerDirectory = $installerDirectory
+            $this.ServiceAccountCredential = $serviceAccountCredential
+            $this.EDDSDBOCredential = $eddsdboCredential
+            $this.RabbitMQCredential = $rabbitMQCredential
             Write-Verbose "Created an instance of RelativityInstance."
         }
         catch
         {
-            Write-Error "An error occurred while creating an instance of RelativityInstance for $($this.Name)."
+            Write-Error "An error occurred while creating an instance of RelativityInstance for $($this.Name): $($_.Exception.Message)."
             throw
         }
     }
@@ -94,6 +101,12 @@ class RelativityInstance
             Write-Verbose "Adding the $($server.Name) server to $($this.Name)."
             $this.ValidateResponseFileProperties($server)
 
+            Write-Verbose "Propagating instance-level settings to $($server.Name)."
+            $server.InstallerDirectory = $this.InstallerDirectory
+            $server.ServiceAccountCredential = $this.ServiceAccountCredential
+            $server.EDDSDBOCredential = $this.EDDSDBOCredential
+            $server.RabbitMQCredential = $this.RabbitMQCredential
+
             $ExistingServer = ($this.Servers | Where-Object -Property Name -eq $server.Name)
 
             if ($null -eq $ExistingServer)
@@ -109,7 +122,7 @@ class RelativityInstance
         }
         catch
         {
-            Write-Error "An error occurred while adding the $($server.Name) server to $($this.Name)."
+            Write-Error "An error occurred while adding the $($server.Name) server to $($this.Name): $($_.Exception.Message)."
             throw
         }
         
@@ -153,7 +166,7 @@ class RelativityInstance
         }
         catch
         {
-            Write-Error "An error occurred while merging the $($newServer.Name) server with previously-existing server."
+            Write-Error "An error occurred while merging the $($newServer.Name) server with previously-existing server: $($_.Exception.Message)."
             throw
         }
     }
@@ -191,38 +204,28 @@ class RelativityInstance
         }
         catch
         {
-            Write-Error "An error occurred while validating response file properties for $($server.Name)."
+            Write-Error "An error occurred while validating response file properties for $($server.Name): $($_.Exception.Message)."
             throw
         }
     }
 
-    [void] SetServiceAccountWindowsCredential([PSCredential] $serviceAccountWindowsCredential)
+    [void] FlagAllServersForInstallation()
     {
-        $this.ServiceAccountWindowsCredential = $serviceAccountWindowsCredential
-    }
-
-    [void] SetEDDSDBOSqlCredential([PSCredential] $eDDSDBOSqlCredential)
-    {
-        $this.EDDSDBOSqlCredential = $eDDSDBOSqlCredential
-    }
-
-    [void] SetServiceAccountSqlCredential([PSCredential] $serviceAccountSqlCredential)
-    {
-        $this.ServiceAccountSqlCredential = $serviceAccountSqlCredential
-    }
-
-    [void] SetRabbitMQCredential([PSCredential] $rabbitMQCredential)
-    {
-        $this.RabbitMQCredential = $rabbitMQCredential
-    }
-
-    [void] SetAdminUserRelativityCredential([PSCredential] $adminUserRelativityCredential)
-    {
-        $this.AdminUserRelativityCredential = $adminUserRelativityCredential
-    }
-
-    [void] SetServiceAccountRelativityCredential([PSCredential] $serviceAccountRelativityCredential)
-    {
-        $this.ServiceAccountRelativityCredential = $serviceAccountRelativityCredential
+        try
+        {
+            Write-Verbose "Flagging all servers for installation."
+            {
+                foreach ($Server in $this.Servers)
+                {
+                    Write-Verbose "Flagging $($Server.Name) for installation."
+                    $Server.DoInstall = $true
+                }
+            }
+       }
+       catch
+       {
+        Write-Error "An error occurred while flagging a server for installation: $($_.Exception.Message)."
+        throw
+       }
     }
 }

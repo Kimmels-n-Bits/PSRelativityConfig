@@ -59,23 +59,17 @@ function New-RelativityInstance
         [ValidateNotNullOrEmpty()]
         [String] $FriendlyName = $Name,
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [String] $InstallerDirectory = "C:\PSRelativityConfig",
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [PSCredential] $ServiceAccountWindowsCredential,
-        [Parameter(Mandatory = $false)]
+        [PSCredential] $ServiceAccountCredential,
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [PSCredential] $EDDSDBOSqlCredential,
-        [Parameter(Mandatory = $false)]
+        [PSCredential] $EDDSDBOCredential,
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [PSCredential] $ServiceAccountSqlCredential,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [PSCredential] $RabbitMQCredential,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [PSCredential] $AdminUserRelativityCredential,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [PSCredential] $ServiceAccountRelativityCredential
+        [PSCredential] $RabbitMQCredential
     )
 
     Begin
@@ -86,37 +80,14 @@ function New-RelativityInstance
     {
         try
         {
-            $Instance = [RelativityInstance]::New($Name, $Friendlyname)
-
-            if (-not ($null -eq $ServiceAccountWindowsCredential))
-            {
-                $Instance.SetServiceAccountWindowsCredential($ServiceAccountWindowsCredential)
-            }
-
-            if (-not ($null -eq $EDDSDBOSqlCredential))
-            {
-                $Instance.SetEDDSDBOSqlCredential($EDDSDBOSqlCredential)
-            }
-
-            if (-not ($null -eq $ServiceAccountSqlCredential))
-            {
-                $Instance.SetServiceAccountSqlCredential($ServiceAccountSqlCredential)
-            }
-
-            if (-not ($null -eq $RabbitMQCredential))
-            {
-                $Instance.SetRabbitMQCredential($RabbitMQCredential)
-            }
-
-            if (-not ($null -eq $AdminUserRelativityCredential))
-            {
-                $Instance.SetAdminUserRelativityCredential($AdminUserRelativityCredential)
-            }
-
-            if (-not ($null -eq $ServiceAccountRelativityCredential))
-            {
-                $Instance.SetServiceAccountRelativityCredential($ServiceAccountRelativityCredential)
-            }
+            $Instance = [RelativityInstance]::New(
+                $Name,
+                $FriendlyName,
+                $InstallerDirectory,
+                $ServiceAccountCredential,
+                $EDDSDBOCredential,
+                $RabbitMQCredential
+            )
 
             return $Instance
         }

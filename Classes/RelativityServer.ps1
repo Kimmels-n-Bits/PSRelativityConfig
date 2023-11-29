@@ -1,3 +1,9 @@
+enum Software
+{
+    Invariant
+    Relativity
+}
+
 <#
 .SYNOPSIS
 Enum for defining server roles within a Relativity environment.
@@ -53,8 +59,28 @@ class RelativityServer
     [String] $Name
     [ValidateNotNull()]
     [Boolean] $IsOnline
+    [ValidateNotNull()]
+    [Boolean] $DoInstall
     [System.Collections.Generic.HashSet[RelativityServerRole]] $Role
     [Hashtable] $ResponseFileProperties
+    [String] $InstallerDirectory
+    [PSCredential] $ServiceAccountCredential
+    [PSCredential] $EDDSDBOCredential
+    [PSCredential] $RabbitMQCredential
+
+    hidden static [Hashtable] $SoftwareRoles = @{
+        [Software]::Invariant = @(
+            "Worker",
+            "WorkerManager"
+        )
+        [Software]::Relativity = @(
+            "Agent",
+            "DistributedSql",
+            "PrimarySql",
+            "ServiceBus",
+            "Web"
+        )
+    }
 
     hidden static [Hashtable] $RoleResponseFileProperties = @{
         [RelativityServerRole]::Agent = @(
@@ -153,6 +179,9 @@ class RelativityServer
                 $this.EnsureServiceRunning("WinRM")
                 $this.EnsureServiceRunning("RemoteRegistry")
             }
+
+            $this.DoInstall = $false
+
             Write-Verbose "Created an instance of RelativityServer."
         }
         catch
@@ -332,20 +361,41 @@ class RelativityServer
 
     .NOTES
     #>
-    [String[]] GetResponseFileProperties()
+    [String[]] GetResponseFileProperties([Software] $software)
     {
         try
         {
             $Properties = @()
-            foreach ($Key in $this.ResponseFileProperties.Keys)
+            $RelevantRoles = [RelativityServer]::SoftwareRoles[$software]
+
+            foreach ($Role in $this.Role)
             {
-                $Value = $this.ResponseFileProperties[$Key]
-                $FormattedKey = $Key.ToUpper()
-                $Property = "$($FormattedKey)=$($Value)"
-                $Properties += $Property
+                if ($RelevantRoles -contains $Role.ToString())
+                {
+                    foreach ($Property in [RelativityServer]::RoleResponseFileProperties[$Role])
+                    {
+                        if ($this.ResponseFileProperties.ContainsKey($Property))
+                        {
+                            $Value = $this.ResponseFileProperties[$Property]
+                            $FormattedKey = $Property.ToUpper()
+                            $PropertyString = "$($FormattedKey)=$($Value)"
+                            $Properties += $PropertyString
+                        }
+                    }
+                }
+
+                if ($Role.ToString() -eq "ServiceBus")
+                {
+                    $Properties += "SHAREDACCESSKEYNAME=$($this.RabbitMQCredential.UserName)"
+                    $Properties += "SHAREDACCESSKEY=$($this.RabbitMQCredential.GetNetworkCredential().Password)"
+                }
             }
 
-            return $Properties
+            $Properties += "SERVICEUSERNAME=$($this.ServiceAccountCredential.UserName)"
+            $Properties += "SERVICEPASSWORD=$($this.ServiceAccountCredential.GetNetworkCredential().Password)"
+            $Properties += "EDDSDBOPASSWORD=$($this.EDDSDBOCredential.GetNetworkCredential().Password)"
+
+            return ($Properties | Get-Unique)
         }
         catch
         {
