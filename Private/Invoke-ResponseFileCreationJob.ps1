@@ -156,7 +156,7 @@ function Invoke-ResponseFileCreationJob
                             }
                             catch
                             {
-                                Write-Error "An error occurred in the job for $($Server.Name): $($_.Exception.Message)"
+                                Write-Error "An error occurred in the job for $($Server.Name): $($_.Exception.Message)."
                                 throw
                             }
                         }

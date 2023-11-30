@@ -25,7 +25,10 @@ function Invoke-RelativityInstall
             Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Validating Install Properties..." -PercentComplete 0.00
             $Instance.ValidateInstallProperties($true)
 
-            Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Staging Response Files..." -PercentComplete 50.00
+            Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Registering PSSessionConfigurations..." -PercentComplete 33.33
+            Invoke-PSSessionConfigurationRegistrationJob -Servers $Servers -ThrottleLimit $ThrottleLimit
+
+            Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Staging Response Files..." -PercentComplete 66.66
             Invoke-ResponseFileCreationJob -Servers $Servers -ThrottleLimit $ThrottleLimit
         }
         catch

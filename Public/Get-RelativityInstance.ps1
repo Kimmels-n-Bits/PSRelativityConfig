@@ -51,6 +51,8 @@ function Get-RelativityInstance
         [ValidateNotNullOrEmpty()]
         [String] $SecretStoreSqlInstance,
         [Parameter(Mandatory = $false)]
+        [PSCredential] $NetworkCredential,
+        [Parameter(Mandatory = $false)]
         [PSCredential] $ServiceAccountCredential,
         [Parameter(Mandatory = $false)]
         [PSCredential] $EDDSDBOCredential,
@@ -73,7 +75,7 @@ function Get-RelativityInstance
             if ($null -ne $InstanceName)
             {
                 Write-Verbose "Retrieved Relativity instance $($InstanceName) from $($PrimarySqlInstance)."
-                $Instance = New-RelativityInstance -Name $InstanceName -ServiceAccountCredential $ServiceAccountCredential -EDDSDBOCredential $EDDSDBOCredential -RabbitMQCredential $RabbitMQCredential
+                $Instance = New-RelativityInstance -Name $InstanceName -NetworkCredential $NetworkCredential -ServiceAccountCredential $ServiceAccountCredential -EDDSDBOCredential $EDDSDBOCredential -RabbitMQCredential $RabbitMQCredential
             }
             else 
             {

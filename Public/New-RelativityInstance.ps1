@@ -59,6 +59,8 @@ function New-RelativityInstance
         [ValidateNotNullOrEmpty()]
         [String] $FriendlyName = $Name,
         [Parameter(Mandatory = $false)]
+        [PSCredential] $NetworkCredential,
+        [Parameter(Mandatory = $false)]
         [PSCredential] $ServiceAccountCredential,
         [Parameter(Mandatory = $false)]
         [PSCredential] $EDDSDBOCredential,
@@ -74,6 +76,11 @@ function New-RelativityInstance
     {
         try
         {
+            if ($null -eq $NetworkCredential)
+            {
+                $NetworkCredential = Get-Credential -Message "Enter the network credentials" -UserName ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)
+            }
+
             if ($null -eq $ServiceAccountCredential)
             {
                 $ServiceAccountCredential = Get-Credential -Message "Enter the Relativity service account credentials"
@@ -92,6 +99,7 @@ function New-RelativityInstance
             $Instance = [RelativityInstance]::New(
                 $Name,
                 $FriendlyName,
+                $NetworkCredential,
                 $ServiceAccountCredential,
                 $EDDSDBOCredential,
                 $RabbitMQCredential

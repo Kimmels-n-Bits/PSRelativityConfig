@@ -31,6 +31,8 @@ class RelativityInstance
     [ValidateNotNull()]
     [RelativityServer[]] $Servers
     [ValidateNotNull()]
+    [PSCredential] $NetworkCredential
+    [ValidateNotNull()]
     [PSCredential] $ServiceAccountCredential
     [ValidateNotNull()]
     [PSCredential] $EDDSDBOCredential
@@ -40,10 +42,13 @@ class RelativityInstance
     [RelativityInstallerBundle] $InstallerBundle
     [ValidateNotNullOrEmpty()]
     [String] $InstallerDirectory
+    [ValidateNotNullOrEmpty()]
+    [String] $PSSessionName
 
     RelativityInstance(
         [String] $name,
         [String] $friendlyName,
+        [PSCredential] $networkCredential,
         [PSCredential] $serviceAccountCredential,
         [PSCredential] $eddsdboCredential,
         [PSCredential] $rabbitMQCredential
@@ -64,6 +69,7 @@ class RelativityInstance
             }
 
             $this.Servers = @()
+            $this.NetworkCredential = $networkCredential
             $this.ServiceAccountCredential = $serviceAccountCredential
             $this.EDDSDBOCredential = $eddsdboCredential
             $this.RabbitMQCredential = $rabbitMQCredential
@@ -191,6 +197,12 @@ class RelativityInstance
             $ValidationErrorCount += 1
         }
 
+        if ($null -eq $this.NetworkCredential)
+        {
+            Write-Error "NetworkCredential is null for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
         if ($null -eq $this.ServiceAccountCredential)
         {
             Write-Error "ServiceAccountCredential is null for instance $($this.Name)."
@@ -228,12 +240,38 @@ class RelativityInstance
             }
         }
 
+        if ([String]::IsNullOrEmpty($this.PSSessionName))
+        {
+            if ($setDefaults)
+            {
+                $this.PSSessionName = "PSRelativityConfig"
+            }
+            else
+            {
+                Write-Error "PSSessionName is null or empty for instance $($this.Name)."
+                $ValidationErrorCount += 1
+            }
+        }
+
         <# Validate server-level properties associated to installation. #>
         foreach ($Server in $this.Servers)
         {
             if ($null -eq $Server.Role -or $Server.Role.Count -eq 0)
             {
                 Write-Error "Role is null or empty for server $($Server.Name)."
+            }
+
+            if ($null -eq $Server.NetworkCredential)
+            {
+                if ($setDefaults)
+                {
+                    $Server.NetworkCredential = $this.NetworkCredential
+                }
+                else
+                {
+                    Write-Error "NetworkCredential is null for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
             }
 
             if ($null -eq $Server.ServiceAccountCredential)
@@ -297,6 +335,19 @@ class RelativityInstance
                 else
                 {
                     Write-Error "InstallerDirectory is null or empty for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
+            }
+
+            if ([String]::IsNullOrEmpty($Server.PSSessionName))
+            {
+                if ($setDefaults)
+                {
+                    $Server.PSSessionName = $this.PSSessionName
+                }
+                else
+                {
+                    Write-Error "PSSessionName is null or empty for server $($Server.Name)."
                     $ValidationErrorCount += 1
                 }
             }

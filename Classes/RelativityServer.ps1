@@ -67,6 +67,8 @@ class RelativityServer
     [ValidateNotNull()]
     [Hashtable] $ResponseFileProperties
     [ValidateNotNull()]
+    [PSCredential] $NetworkCredential
+    [ValidateNotNull()]
     [PSCredential] $ServiceAccountCredential
     [ValidateNotNull()]
     [PSCredential] $EDDSDBOCredential
@@ -76,6 +78,8 @@ class RelativityServer
     [RelativityInstallerBundle] $InstallerBundle
     [ValidateNotNull()]
     [String] $InstallerDirectory
+    [ValidateNotNull()]
+    [String] $PSSessionName
 
     static [Hashtable] $SoftwareRoles = @{
         [Software]::Invariant = @(
