@@ -65,14 +65,14 @@ function Get-SecretStoreServer
                     Write-Verbose "Retrieving InstallDir property for $($SecretStoreServer)."
                     $ServicePathWithArguments = (Get-CimInstance -ComputerName $SecretStoreServer -ClassName "Win32_Service" -Filter 'Name = "Relativity Secret Store"').PathName
                     $ServicePath = ($ServicePathWithArguments -replace "https://\*:.*$","").Trim().Trim('"')
-                    $InstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
+                    $SecretStoreInstallDir = "$((New-Object System.IO.DirectoryInfo $ServicePath).Parent.Parent.FullName)\"
 
                     Write-Verbose "Validating retrieved properties for $($SecretStoreServer)."
-                    if ($null -eq $InstallDir) { throw "InstallDir property was not retrieved for $($SecretStoreServer)." }
+                    if ($null -eq $SecretStoreInstallDir) { throw "SecretStoreInstallDir property was not retrieved for $($SecretStoreServer)." }
                     
                     Write-Verbose "Setting properties for $($SecretStoreServer)."
                     $Server.AddRole("SecretStore")
-                    $Server.SetProperty("InstallDir", $InstallDir)
+                    $Server.SetProperty("SecretStoreInstallDir", $SecretStoreInstallDir)
                     $Server.SetProperty("SqlInstanceServerName", $SecretStoreSqlInstance)
 
                     $Servers += $Server

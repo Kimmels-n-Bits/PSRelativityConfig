@@ -59,16 +59,10 @@ function New-RelativityInstance
         [ValidateNotNullOrEmpty()]
         [String] $FriendlyName = $Name,
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [String] $InstallerDirectory = "C:\PSRelativityConfig",
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
         [PSCredential] $ServiceAccountCredential,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
+        [Parameter(Mandatory = $false)]
         [PSCredential] $EDDSDBOCredential,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
+        [Parameter(Mandatory = $false)]
         [PSCredential] $RabbitMQCredential
     )
 
@@ -80,10 +74,24 @@ function New-RelativityInstance
     {
         try
         {
+            if ($null -eq $ServiceAccountCredential)
+            {
+                $ServiceAccountCredential = Get-Credential -Message "Enter the Relativity service account credentials"
+            }
+
+            if ($null -eq $EDDSDBOCredential)
+            {
+                $EDDSDBOCredential = Get-Credential -Message "Enter the EDDSDBO user account credentials" -UserName "EDDSDBO"
+            }
+
+            if ($null -eq $RabbitMQCredential)
+            {
+                $RabbitMQCredential = Get-Credential -Message "Enter the RabbitMQ user account credentials"
+            }
+
             $Instance = [RelativityInstance]::New(
                 $Name,
                 $FriendlyName,
-                $InstallerDirectory,
                 $ServiceAccountCredential,
                 $EDDSDBOCredential,
                 $RabbitMQCredential

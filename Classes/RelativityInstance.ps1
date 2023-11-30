@@ -30,19 +30,20 @@ class RelativityInstance
     [String] $FriendlyName
     [ValidateNotNull()]
     [RelativityServer[]] $Servers
-    [ValidateNotNullOrEmpty()]
-    [String] $InstallerDirectory
     [ValidateNotNull()]
     [PSCredential] $ServiceAccountCredential
     [ValidateNotNull()]
     [PSCredential] $EDDSDBOCredential
     [ValidateNotNull()]
     [PSCredential] $RabbitMQCredential
+    [ValidateNotNull()]
+    [RelativityInstallerBundle] $InstallerBundle
+    [ValidateNotNullOrEmpty()]
+    [String] $InstallerDirectory
 
     RelativityInstance(
         [String] $name,
         [String] $friendlyName,
-        [String] $installerDirectory,
         [PSCredential] $serviceAccountCredential,
         [PSCredential] $eddsdboCredential,
         [PSCredential] $rabbitMQCredential
@@ -63,7 +64,6 @@ class RelativityInstance
             }
 
             $this.Servers = @()
-            $this.InstallerDirectory = $installerDirectory
             $this.ServiceAccountCredential = $serviceAccountCredential
             $this.EDDSDBOCredential = $eddsdboCredential
             $this.RabbitMQCredential = $rabbitMQCredential
@@ -99,14 +99,6 @@ class RelativityInstance
         try
         {
             Write-Verbose "Adding the $($server.Name) server to $($this.Name)."
-            $this.ValidateResponseFileProperties($server)
-
-            Write-Verbose "Propagating instance-level settings to $($server.Name)."
-            $server.InstallerDirectory = $this.InstallerDirectory
-            $server.ServiceAccountCredential = $this.ServiceAccountCredential
-            $server.EDDSDBOCredential = $this.EDDSDBOCredential
-            $server.RabbitMQCredential = $this.RabbitMQCredential
-
             $ExistingServer = ($this.Servers | Where-Object -Property Name -eq $server.Name)
 
             if ($null -eq $ExistingServer)
@@ -125,7 +117,6 @@ class RelativityInstance
             Write-Error "An error occurred while adding the $($server.Name) server to $($this.Name): $($_.Exception.Message)."
             throw
         }
-        
     }
 
     <#
@@ -171,61 +162,189 @@ class RelativityInstance
         }
     }
 
-    <#
-    .SYNOPSIS
-    Validates the response file properties of a Relativity server.
-
-    .DESCRIPTION
-    The ValidateResponseFileProperties method checks the response file properties of a given RelativityServer.
-    It ensures that each property is neither null nor an empty string, throwing an exception if this condition is not met.
-
-    .EXAMPLE
-    $instance.ValidateResponseFileProperties($server)
-    Validates the response file properties of the specified RelativityServer.
-    
-    .PARAMETER server
-    The RelativityServer whose properties are to be validated.
-
-    .NOTES
-    #>
-    [void] ValidateResponseFileProperties([RelativityServer] $server)
+    [void] SetInstall([Boolean] $install)
     {
-        try
+        foreach ($Server in $this.Servers)
         {
-            Write-Verbose "Validating response file properties for $($server.Name)."
-            foreach ($Property in $server.ResponseFileProperties.Keys)
-            {
-                if ([String]::IsNullOrEmpty($server.ResponseFileProperties[$Property]))
-                {
-                    throw "$($Property) Property of $($server.Name) cannot be null or empty."
-                }
-            }
-            Write-Verbose "Validated response file properties for $($server.Name)."
-        }
-        catch
-        {
-            Write-Error "An error occurred while validating response file properties for $($server.Name): $($_.Exception.Message)."
-            throw
+            $Server.Install = $install
         }
     }
 
-    [void] FlagAllServersForInstallation()
+    [void] SetInstallerBundle([RelativityInstallerBundle] $installerBundle)
     {
-        try
+        $this.InstallerBundle = $installerBundle
+    }
+
+    [void] SetInstallerDirectory([String] $installerDirectory)
+    {
+        $this.InstallerDirectory = $installerDirectory
+    }
+
+    [void] ValidateInstallProperties([Boolean] $setDefaults)
+    {
+        $ValidationErrorCount = 0
+
+        <# Validate instance-level properties associated to installation. #>
+        if ($null -eq $this.Servers -or $this.Servers.Count -eq 0)
         {
-            Write-Verbose "Flagging all servers for installation."
+            Write-Error "Servers is null or empty for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
+        if ($null -eq $this.ServiceAccountCredential)
+        {
+            Write-Error "ServiceAccountCredential is null for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
+        if ($null -eq $this.EDDSDBOCredential)
+        {
+            Write-Error "EDDSDBOCredential is null for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
+        if ($null -eq $this.RabbitMQCredential)
+        {
+            Write-Error "RabbitMQCredential is null for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
+        if ($null -eq $this.InstallerBundle)
+        {
+            Write-Error "InstallerBundle is null for instance $($this.Name)."
+            $ValidationErrorCount += 1
+        }
+
+        if ([String]::IsNullOrEmpty($this.InstallerDirectory))
+        {
+            if ($setDefaults)
             {
-                foreach ($Server in $this.Servers)
+                $this.InstallerDirectory = "C:\PSRelativityConfig"
+            }
+            else
+            {
+                Write-Error "InstallerDirectory is null or empty for instance $($this.Name)."
+                $ValidationErrorCount += 1
+            }
+        }
+
+        <# Validate server-level properties associated to installation. #>
+        foreach ($Server in $this.Servers)
+        {
+            if ($null -eq $Server.Role -or $Server.Role.Count -eq 0)
+            {
+                Write-Error "Role is null or empty for server $($Server.Name)."
+            }
+
+            if ($null -eq $Server.ServiceAccountCredential)
+            {
+                if ($setDefaults)
                 {
-                    Write-Verbose "Flagging $($Server.Name) for installation."
-                    $Server.DoInstall = $true
+                    $Server.ServiceAccountCredential = $this.ServiceAccountCredential
+                }
+                else
+                {
+                    Write-Error "ServiceAccountCredential is null for server $($Server.Name)."
+                    $ValidationErrorCount += 1
                 }
             }
-       }
-       catch
-       {
-        Write-Error "An error occurred while flagging a server for installation: $($_.Exception.Message)."
-        throw
-       }
+
+            if ($null -eq $Server.EDDSDBOCredential)
+            {
+                if ($setDefaults)
+                {
+                    $Server.EDDSDBOCredential = $this.EDDSDBOCredential
+                }
+                else
+                {
+                    Write-Error "EDDSDBOCredential is null for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
+            }
+
+            if ($null -eq $Server.RabbitMQCredential)
+            {
+                if ($setDefaults)
+                {
+                    $Server.RabbitMQCredential = $this.RabbitMQCredential
+                }
+                else
+                {
+                    Write-Error "RabbitMQCredential is null for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
+            }
+
+            if ($null -eq $Server.InstallerBundle)
+            {
+                if ($setDefaults)
+                {
+                    $Server.InstallerBundle = $this.InstallerBundle
+                }
+                else
+                {
+                    Write-Error "InstallerBundle is null for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
+            }
+
+            if ([String]::IsNullOrEmpty($Server.InstallerDirectory))
+            {
+                if ($setDefaults)
+                {
+                    $Server.InstallerDirectory = $this.InstallerDirectory
+                }
+                else
+                {
+                    Write-Error "InstallerDirectory is null or empty for server $($Server.Name)."
+                    $ValidationErrorCount += 1
+                }
+            }
+
+            foreach ($Property in @($Server.ResponseFileProperties.Keys))
+            {
+                if ([String]::IsNullOrEmpty($Server.ResponseFileProperties[$Property]))
+                {
+                    if ($setDefaults)
+                    {
+                        switch ($Property)
+                        {
+                            "DefaultAgents" { $Server.SetProperty("DefaultAgents", "0") }
+                            "EnableWinAuth" { $Server.SetProperty("EnableWinAuth", "0") }
+                            "InstallAgents" { $Server.SetProperty("InstallAgents", "1") }
+                            "InstallDir" { $Server.SetProperty("InstallDir", "C:\Program Files\kCura Corporation\Relativity\") }
+                            "InstallDistributedDatabase" { $Server.SetProperty("InstallDistributedDatabase", "1") }
+                            "InstallPrimaryDatabase" { $Server.SetProperty("InstallPrimaryDatabase", "1") }
+                            "InstallQueueManager" { $Server.SetProperty("InstallQueueManager", "1") }
+                            "InstallServiceBus" { $Server.SetProperty("InstallServiceBus", "1") }
+                            "InstallWeb" { $Server.SetProperty("InstallWeb", "1") }
+                            "InstallWorker" { $Server.SetProperty("InstallWorker", "1") }
+                            "NISTPackagePath" { $Server.SetProperty("NISTPackagePath", (Join-Path -Path $Server.InstallerDirectory -ChildPath "NISTPackage.zip")) }
+                            "QueueManagerInstallPath" { $Server.SetProperty("QueueManagerInstallPath", "C:\Program Files\kCura Corporation\Invariant\QueueManager\") }
+                            "SecretStoreInstallDir" { $Server.SetProperty("SecretStoreInstallDir", "C:\Program Files\Relativity Secret Store\") }
+                            "ServiceBusProvider" { $Server.SetProperty("ServiceBusProvider", "RabbitMQ") }
+                            "UseWinAuth" { $Server.SetProperty("UseWinAuth", "1") }
+                            "WorkerInstallPath" { $Server.SetProperty("WorkerInstallPath", "C:\Program Files\kCura Corporation\Invariant\Worker\") }
+
+                            default
+                            {
+                                Write-Error "ResponseFileProperty '$($Property)' is null or empty for server $($Server.Name)."
+                                $ValidationErrorCount += 1
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Write-Error "ResponseFileProperty '$($Property)' is null or empty for server $($Server.Name)."
+                        $ValidationErrorCount += 1
+                    }
+                }
+            }
+        }
+
+        if ($ValidationErrorCount -gt 0)
+        {
+            throw "$($ValidationErrorCount) validation errors were encountered for instance $($this.Name). See error output for details."
+        }
     }
 }

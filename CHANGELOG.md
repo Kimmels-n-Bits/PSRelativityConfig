@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Get-DefaultThrottleLimit
-- Invoke-RelativityInstallStaging
+- Invoke-RelativityInstall
+- New-RelativityInstallerBundle
 
 ### Changed
 - Added credential requirements to New-RelativityInstance and Get-RelativityInstance
+- Refactored RelativityInstance and RelativityServer classes so default properties are set during validation if they're null
 
 ## [0.1.1] - 2023-11-26
 

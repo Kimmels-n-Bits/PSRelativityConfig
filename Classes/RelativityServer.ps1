@@ -2,6 +2,7 @@ enum Software
 {
     Invariant
     Relativity
+    SecretStore
 }
 
 <#
@@ -60,29 +61,40 @@ class RelativityServer
     [ValidateNotNull()]
     [Boolean] $IsOnline
     [ValidateNotNull()]
-    [Boolean] $DoInstall
+    [Boolean] $Install
+    [ValidateNotNull()]
     [System.Collections.Generic.HashSet[RelativityServerRole]] $Role
+    [ValidateNotNull()]
     [Hashtable] $ResponseFileProperties
-    [String] $InstallerDirectory
+    [ValidateNotNull()]
     [PSCredential] $ServiceAccountCredential
+    [ValidateNotNull()]
     [PSCredential] $EDDSDBOCredential
+    [ValidateNotNull()]
     [PSCredential] $RabbitMQCredential
+    [ValidateNotNull()]
+    [RelativityInstallerBundle] $InstallerBundle
+    [ValidateNotNull()]
+    [String] $InstallerDirectory
 
-    hidden static [Hashtable] $SoftwareRoles = @{
+    static [Hashtable] $SoftwareRoles = @{
         [Software]::Invariant = @(
-            "Worker",
-            "WorkerManager"
+            [RelativityServerRole]::Worker,
+            [RelativityServerRole]::WorkerManager
         )
         [Software]::Relativity = @(
-            "Agent",
-            "DistributedSql",
-            "PrimarySql",
-            "ServiceBus",
-            "Web"
+            [RelativityServerRole]::Agent,
+            [RelativityServerRole]::DistributedSql,
+            [RelativityServerRole]::PrimarySql,
+            [RelativityServerRole]::ServiceBus,
+            [RelativityServerRole]::Web
+        )
+        [Software]::SecretStore = @(
+            [RelativityServerRole]::SecretStore
         )
     }
 
-    hidden static [Hashtable] $RoleResponseFileProperties = @{
+    static [Hashtable] $RoleResponseFileProperties = @{
         [RelativityServerRole]::Agent = @(
             "InstallAgents",
             "InstallDir",
@@ -122,7 +134,7 @@ class RelativityServer
         [RelativityServerRole]::SecretStore = @(
             "SqlInstanceServerName",
             "UseWinAuth",
-            "InstallDir"
+            "SecretStoreInstallDir"
         )
         [RelativityServerRole]::ServiceBus = @(
             "InstallServiceBus",
@@ -180,7 +192,7 @@ class RelativityServer
                 $this.EnsureServiceRunning("RemoteRegistry")
             }
 
-            $this.DoInstall = $false
+            $this.Install = $false
 
             Write-Verbose "Created an instance of RelativityServer."
         }
@@ -221,26 +233,7 @@ class RelativityServer
                     if (-not $this.ResponseFileProperties.ContainsKey($property))
                     {
                         Write-Verbose "Adding $($Property) Property to $($this.Name)."
-                        switch ($Property)
-                        {
-                            "InstallAgents" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallDistributedDatabase" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallPrimaryDatabase" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallServiceBus" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallWeb" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallWorker" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallQueueManager" { $this.ResponseFileProperties[$Property] = "1" }
-                            "InstallDir" { if ($role -eq [RelativityServerRole]::SecretStore) { $this.ResponseFileProperties[$Property] = "C:\Program Files\Relativity Secret Store\" } else { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Relativity\" } }
-                            "UseWinAuth" { $this.ResponseFileProperties[$Property] = "1" }
-                            "ServiceBusProvider" { $this.ResponseFileProperties[$Property] = "RabbitMQ" }
-                            "EnableWinAuth" { $this.ResponseFileProperties[$Property] = "0" }
-                            "NISTPackagePath" { $this.ResponseFileProperties[$Property] = "C:\PSRelativityConfig\NISTPackage.zip" }
-                            "DefaultAgents" { $this.ResponseFileProperties[$Property] = "0" }
-                            "WorkerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\Worker\" }
-                            "QueueManagerInstallPath" { $this.ResponseFileProperties[$Property] = "C:\Program Files\kCura Corporation\Invariant\QueueManager\" }
-
-                            default { $this.ResponseFileProperties[$Property] = $null }
-                        }
+                        $this.ResponseFileProperties[$Property] = $null
                         Write-Verbose "Added $($Property) Property to $($this.Name)."
                     }
                 }

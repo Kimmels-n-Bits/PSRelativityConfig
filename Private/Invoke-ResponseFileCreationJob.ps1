@@ -1,3 +1,38 @@
+<#
+.SYNOPSIS
+Initiates the creation of response files on multiple servers concurrently.
+
+.DESCRIPTION
+The Invoke-ResponseFileCreationJob function creates response files for software installations on specified servers 
+in a Relativity environment. It leverages PowerShell jobs to perform these tasks in parallel across multiple servers, 
+thus optimizing the process. The function uses the server details and the software requirements to create the necessary 
+response files for each server. It also provides progress updates and handles any errors encountered during the process.
+
+.PARAMETER Servers
+Specifies an array of RelativityServer objects. Each server in the array will have response files created for the 
+specified software installations.
+
+.PARAMETER ThrottleLimit
+Specifies the maximum number of concurrent jobs to run. This parameter helps in controlling the load and ensuring 
+that the server resources are not overutilized.
+
+.EXAMPLE
+$Servers = @($Server1, $Server2, $Server3)
+Invoke-ResponseFileCreationJob -Servers $Servers -ThrottleLimit 10
+
+This example initiates the creation of response files on the servers specified in the $Servers array, with a maximum 
+of 10 concurrent jobs.
+
+.INPUTS
+RelativityServer[]
+An array of RelativityServer objects representing the servers on which the response files will be created.
+
+.OUTPUTS
+None.
+
+.NOTES
+The function requires proper network connectivity and permissions to access the target servers.
+#>
 function Invoke-ResponseFileCreationJob
 {
     [CmdletBinding()]

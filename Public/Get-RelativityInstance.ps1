@@ -50,14 +50,11 @@ function Get-RelativityInstance
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String] $SecretStoreSqlInstance,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
+        [Parameter(Mandatory = $false)]
         [PSCredential] $ServiceAccountCredential,
-        [ValidateNotNull()]
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [PSCredential] $EDDSDBOCredential,
-        [ValidateNotNull()]
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [PSCredential] $RabbitMQCredential
     )
 
