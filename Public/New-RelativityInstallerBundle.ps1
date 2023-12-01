@@ -20,6 +20,7 @@ function New-RelativityInstallerBundle
     Begin
     {
         Write-Verbose "Started New-RelativityInstallerBundle."
+        Write-Progress -Id 1 -Activity "Collecting Relativity Installation Files" -Status "Starting..." -PercentComplete 0.00
     }
     Process
     {
@@ -42,6 +43,7 @@ function New-RelativityInstallerBundle
     }
     End
     {
+        Write-Progress -Id 1 -Activity "Collecting Relativity Installation Files" -Status "Completed" -Completed
         Write-Verbose "Completed New-RelativityInstallerBundle."
     }
 }

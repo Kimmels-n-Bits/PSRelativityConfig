@@ -1,4 +1,4 @@
-function Invoke-PSSessionConfigurationRegistrationJob
+function Invoke-PSSessionConfigurationUnregistrationJob
 {
     [CmdletBinding()]
     Param
@@ -14,8 +14,8 @@ function Invoke-PSSessionConfigurationRegistrationJob
 
     Begin
     {
-        Write-Verbose "Started Invoke-PSSessionConfigurationRegistrationJob."
-        Write-Progress -Id 2 -ParentId 1 -Activity "Registering PSSessionConfigurations" -Status "Starting..." -PercentComplete 0.00
+        Write-Verbose "Started Invoke-PSSessionConfigurationUnregistrationJob."
+        Write-Progress -Id 2 -ParentId 1 -Activity "Unregistering PSSessionConfigurations" -Status "Starting..." -PercentComplete 0.00
     }
     Process
     {
@@ -35,7 +35,7 @@ function Invoke-PSSessionConfigurationRegistrationJob
                 $FailedJobCount = ($JobsStarted | Where-Object -Property State -eq "Failed").Count
                 if ($JobCount -eq 0){ $PercentComplete = 0.00 } else { $PercentComplete = ($CompletedJobCount + $FailedJobCount) / $JobCount * 100 }
 
-                Write-Progress -Id 2 -ParentId 1 -Activity "Registering PSSessionConfigurations" -Status "Running Jobs. $($JobCount) total. $($CompletedJobCount) completed. $($FailedJobCount) failed." -PercentComplete $PercentComplete
+                Write-Progress -Id 2 -ParentId 1 -Activity "Unregistering PSSessionConfigurations" -Status "Running Jobs. $($JobCount) total. $($CompletedJobCount) completed. $($FailedJobCount) failed." -PercentComplete $PercentComplete
 
                 if (($JobsStarted | Where-Object State -eq "Running").Count -lt $ThrottleLimit)
                 {
@@ -45,9 +45,6 @@ function Invoke-PSSessionConfigurationRegistrationJob
                             [Parameter(Mandatory = $true)]
                             [ValidateNotNullOrEmpty()]
                             [String] $ServerName,
-                            [Parameter(Mandatory = $true)]
-                            [ValidateNotNullOrEmpty()]
-                            [PSCredential] $NetworkCredential,
                             [Parameter(Mandatory = $true)]
                             [ValidateNotNullOrEmpty()]
                             [String] $PSSessionName
@@ -60,17 +57,14 @@ function Invoke-PSSessionConfigurationRegistrationJob
                                 (
                                     [Parameter(Mandatory = $true)]
                                     [ValidateNotNullOrEmpty()]
-                                    [PSCredential] $NetworkCredential,
-                                    [Parameter(Mandatory = $true)]
-                                    [ValidateNotNullOrEmpty()]
                                     [String] $PSSessionName
                                 )
 
                                 try
                                 {
-                                    if ($null -eq (Get-PSSessionConfiguration -Name $PSSessionName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
+                                    if ($null -ne (Get-PSSessionConfiguration -Name $PSSessionName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
                                     {
-                                        Register-PSSessionConfiguration -RunAsCredential $NetworkCredential -Name $PSSessionName -NoServiceRestart | Out-Null
+                                        Unregister-PSSessionConfiguration -Name $PSSessionName -NoServiceRestart | Out-Null
                                     }
                                 }
                                 catch
@@ -79,7 +73,7 @@ function Invoke-PSSessionConfigurationRegistrationJob
                                 }
                             }
 
-                            Invoke-Command -ComputerName $ServerName -ScriptBlock $ScriptBlock -ArgumentList $NetworkCredential, $PSSessionName
+                            Invoke-Command -ComputerName $ServerName -ScriptBlock $ScriptBlock -ArgumentList $PSSessionName
                         }
                         catch
                         {
@@ -88,8 +82,8 @@ function Invoke-PSSessionConfigurationRegistrationJob
                         }
                     }
 
-                    Write-Verbose "Running job to register PSSessionConfiguration on $($Server.Name)."
-                    $Job = Start-Job -ScriptBlock $ScriptBlock -ArgumentList $Server.Name, $Server.NetworkCredential, $Server.PSSessionName
+                    Write-Verbose "Running job to unregister PSSessionConfiguration on $($Server.Name)."
+                    $Job = Start-Job -ScriptBlock $ScriptBlock -ArgumentList $Server.Name, $Server.PSSessionName
                     $JobsToStart += $Job
                 }
                 else
@@ -106,7 +100,7 @@ function Invoke-PSSessionConfigurationRegistrationJob
                 $CompletedJobCount = ($JobsStarted | Where-Object -Property State -eq "Completed").Count
                 $FailedJobCount = ($JobsStarted | Where-Object -Property State -eq "Failed").Count
                 if ($JobCount -eq 0) { $PercentComplete = 0.00 } else { $PercentComplete = ($CompletedJobCOunt + $FailedJobCount) / $JobCount * 100 }
-                Write-Progress -Id 2 -ParentId 1 -Activity "Registering PSSessionConfigurations" -Status "Running Jobs. $($JobCount) total. $($CompletedJobCount) completed. $($FailedJobCount) failed." -PercentComplete $PercentComplete
+                Write-Progress -Id 2 -ParentId 1 -Activity "Unregistering PSSessionConfigurations" -Status "Running Jobs. $($JobCount) total. $($CompletedJobCount) completed. $($FailedJobCount) failed." -PercentComplete $PercentComplete
                 Start-Sleep -Seconds 3
             }
 
@@ -128,7 +122,7 @@ function Invoke-PSSessionConfigurationRegistrationJob
         }
         catch
         {
-            Write-Error "An error occurred while attempting to start the PSSessionConfiguration registration job(s): $($_.Exception.Message)."
+            Write-Error "An error occurred while attempting to start the PSSessionConfiguration unregistration job(s): $($_.Exception.Message)."
             throw
         }
         finally
@@ -138,7 +132,7 @@ function Invoke-PSSessionConfigurationRegistrationJob
     }
     End
     {
-        Write-Progress -Id 2 -ParentId 1 -Activity "Registering PSSessionConfigurations" -Status "Completed" -Completed
-        Write-Verbose "Completed Invoke-PSSessionConfigurationRegistrationJob"
+        Write-Progress -Id 2 -ParentId 1 -Activity "Unregistering PSSessionConfigurations" -Status "Completed" -Completed
+        Write-Verbose "Completed Invoke-PSSessionConfigurationUnregistrationJob"
     }
 }

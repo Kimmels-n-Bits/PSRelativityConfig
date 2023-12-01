@@ -1,3 +1,10 @@
+enum ServiceStartupType
+{
+    Automatic
+    Disabled
+    Manual
+}
+
 enum Software
 {
     Invariant
@@ -192,7 +199,9 @@ class RelativityServer
 
             if ($this.IsOnline)
             {
+                $this.SetServiceStartupType("WinRM", [ServiceStartupType]::Automatic)
                 $this.EnsureServiceRunning("WinRM")
+                $this.SetServiceStartupType("RemoteRegistry", [ServiceStartupType]::Automatic)
                 $this.EnsureServiceRunning("RemoteRegistry")
             }
 
@@ -430,7 +439,7 @@ class RelativityServer
         Write-Verbose "Tested network connectivity to $($this.Name)."
     }
 
-    [void] EnsureServiceRunning([String] $serviceName)
+    [void] SetServiceStartupType([String] $serviceName, [ServiceStartupType] $startupType)
     {
         $CimSession = $null
         
@@ -439,19 +448,13 @@ class RelativityServer
             $CimSession = New-CimSession -ComputerName $this.Name
             $Service = Get-CimInstance -CimSession $CimSession -ClassName Win32_Service -Filter "Name='$($serviceName)'"
 
-            if ($Service.StartMode -ne "Automatic")
+            if ($Service.StartMode -ne $startupType.ToString())
             {
-                Write-Verbose "Setting startup type of the $($serviceName) service on $($this.Name) to automatic using CIM."
+                Write-Verbose "Setting startup type of the $($serviceName) service on $($this.Name) to $($startupType.ToString()) using CIM."
                 $MethodParameters = @{
-                    StartMode = "Automatic"
+                    StartMode = $startupType.ToString()
                 }
                 $Service | Invoke-CimMethod -MethodName ChangeStartMode -Arguments $MethodParameters
-            }
-
-            if ($Service.Status -ne "Running")
-            {
-                Write-Verbose "Starting the $($serviceName) service on $($this.Name) using CIM."
-                $Service | Invoke-CimMethod -MethodName StartService
             }
         }
         catch
@@ -461,16 +464,84 @@ class RelativityServer
             {
                 $Service = Get-WmiObject -Class Win32_Service -Filter "Name='$($serviceName)'" -ComputerName $this.Name
 
-                if ($Service.StartMode -ne "Automatic")
+                if ($Service.StartMode -ne $startupType.ToString())
                 {
-                    Write-Verbose "Setting startup type of the $($serviceName) service on $($this.Name) to automatic using WMI."
-                    $Service.ChangeStartMode("Automatic")
+                    Write-Verbose "Setting startup type of the $($serviceName) service on $($this.Name) to $($startupType.ToString()) using WMI."
+                    $Service.ChangeStartMode($startupType.ToString())
+                }
+            }
+            catch
+            {
+                Write-Error "An error occurred while setting the startup type of the $($serviceName) service on $($this.Name): $($_.Exception.Message)"
+                throw
+            }
+        }
+        finally
+        {
+            if ($CimSession)
+            {
+                Remove-CimSession -CimSession $CimSession
+            }
+        }
+    }
+
+    [void] EnsureServiceRunning([String] $serviceName)
+    {
+        $CimSession = $null
+        $Timeout = New-TimeSpan -Minutes 5
+        $Stopwatch = $null
+
+        try
+        {
+            IF ($serviceName -eq "WinRM")
+            {
+                throw
+            }
+
+            $CimSession = New-CimSession -ComputerName $this.Name
+            $Stopwatch = [Diagnostics.Stopwatch]::StartNew()
+            $Service = Get-CimInstance -CimSession $CimSession -ClassName Win32_Service -Filter "Name='$($serviceName)'"
+
+            while ($Service.State -ne "Running" -and $Stopwatch.Elapsed -lt $Timeout)
+            {
+                if ($Service.State -ne "Starting")
+                {
+                    Write-Verbose "Starting the $($serviceName) service on $($this.Name) using CIM."
+                    $Service | Invoke-CimMethod -MethodName StartService
                 }
 
-                if ($Service.Status -ne "Running")
+                Start-Sleep -Seconds 2
+                $Service = Get-CimInstance -CimSession $CimSession -ClassName Win32_Service -Filter "Name='$($serviceName)'"
+            }
+
+            if ($Service.State -ne "Running")
+            {
+                throw
+            }
+        }
+        catch
+        {
+            Write-Verbose "Failed to use CIM for managing the $($serviceName) service on $($this.Name). Falling back to WMI."
+            try
+            {
+                $Stopwatch = [Diagnostics.Stopwatch]::StartNew()
+                $Service = Get-WmiObject -Class Win32_Service -Filter "Name='$($serviceName)'" -ComputerName $this.Name
+
+                while ($Service.State -ne "Running" -and $Stopwatch.Elapsed -lt $Timeout)
                 {
-                    Write-Verbose "Starting the $($serviceName) service on $($this.Name) using WMI."
-                    $Service.StartService()
+                    if ($Service.State -ne "Starting")
+                    {
+                        Write-Verbose "Starting the $($serviceName) service on $($this.Name) using WMI."
+                        $Service.StartService()
+                    }
+
+                    Start-Sleep -Seconds 2
+                    $Service = Get-WmiObject -Class Win32_Service -Filter "Name='$($serviceName)'" -ComputerName $this.Name
+                }
+
+                if ($Service.State -ne "Running")
+                {
+                    Write-Error "Failed to start the $($serviceName) service on $($this.Name) within the 10-minute timeout."
                 }
             }
             catch
@@ -484,6 +555,90 @@ class RelativityServer
             if ($CimSession)
             {
                 Remove-CimSession -CimSession $CimSession
+            }
+
+            if ($Stopwatch)
+            {
+                $Stopwatch.Stop()
+            }
+        }
+    }
+
+    [void] EnsureServiceStopped([String] $serviceName)
+    {
+        $CimSession = $null
+        $Timeout = New-TimeSpan -Minutes 5
+        $Stopwatch = $null
+        
+        try
+        {
+            IF ($serviceName -eq "WinRM")
+            {
+                throw
+            }
+            
+            $CimSession = New-CimSession -ComputerName $this.Name
+            $Stopwatch = [Diagnostics.Stopwatch]::StartNew()
+            $Service = Get-CimInstance -CimSession $CimSession -ClassName Win32_Service -Filter "Name='$($serviceName)'"
+
+            while ($Service.State -ne "Stopped" -and $Stopwatch.Elapsed -lt $Timeout)
+            {
+                if ($Service.State -ne "Stopping")
+                {
+                    Write-Verbose "Stopping the $($serviceName) service on $($this.Name) using CIM."
+                    $Service | Invoke-CimMethod -MethodName StopService
+                }
+
+                Start-Sleep -Seconds 2
+                $Service = Get-CimInstance -CimSession $CimSession -ClassName Win32_Service -Filter "Name='$($serviceName)'"
+            }
+
+            if ($Service.State -ne "Stopped")
+            {
+                throw
+            }
+        }
+        catch
+        {
+            Write-Verbose "Failed to use CIM for managing the $($serviceName) service on $($this.Name). Falling back to WMI."
+            try
+            {
+                $Stopwatch = [Diagnostics.Stopwatch]::StartNew()
+                $Service = Get-WmiObject -Class Win32_Service -Filter "Name='$($serviceName)'" -ComputerName $this.Name
+
+                while ($Service.State -ne "Stopped" -and $Stopwatch.Elapsed -lt $Timeout)
+                {
+                    if ($Service.State -ne "Stopping")
+                    {
+                        Write-Verbose "Stopping the $($serviceName) service on $($this.Name) using WMI."
+                        $Service.StopService()
+                    }
+
+                    Start-Sleep -Seconds 2
+                    $Service = Get-WmiObject -Class Win32_Service -Filter "Name='$($serviceName)'" -ComputerName $this.Name
+                }
+
+                if ($Service.State -ne "Stopped")
+                {
+                    Write-Error "Failed to stop the $($serviceName) service on $($this.Name) within the 10-minute timeout."
+                }
+            }
+            catch
+            {
+                Write-Error "An error occurred while ensuring the $($serviceName) service was running on $($this.Name): $($_.Exception.Message)"
+                throw
+            }
+        }
+        finally
+        {
+            if ($CimSession)
+            {
+                Remove-CimSession -CimSession $CimSession
+            }
+
+            if ($Stopwatch)
+            {
+                $Stopwatch.Stop()
             }
         }
     }
