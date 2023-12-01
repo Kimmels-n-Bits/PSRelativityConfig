@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2023-12-01
+
+### Added
+- Invoke-PSSessionConfigurationUnregistrationJob
+- Invoke-StartRemoteServiceJob
+- Invoke-StopRemoteServiceJob
+
+### Changed
+- Refactored EnsureServiceRunning method of RelativityServer class
+
 ## [0.1.3] - 2023-11-30
 
 ### Added
