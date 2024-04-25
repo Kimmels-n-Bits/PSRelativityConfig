@@ -1,2 +1,2 @@
 # PSRelativityConfig
-A PowerShell module with cmdlets to configure Relativity environments.
+A PowerShell module with functions to configure Relativity environments.

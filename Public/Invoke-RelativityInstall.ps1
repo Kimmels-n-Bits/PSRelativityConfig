@@ -19,11 +19,12 @@ function Invoke-RelativityInstall
     {
         try
         {
-            $Servers = ($Instance.Servers | Where-Object { $_.IsOnline -eq $true -and $_.Install -eq $true })
             $ThrottleLimit = Get-DefaultThrottleLimit
 
             Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Validating Install Properties..." -PercentComplete 0.00
             $Instance.ValidateInstallProperties($true)
+
+            $Servers = ($Instance.Servers | Where-Object { $_.IsOnline -eq $true -and $_.Install -eq $true })
 
             Write-Progress -Id 1 -Activity "Staging Relativity Installation Files" -Status "Registering PSSessionConfigurations..." -PercentComplete 12.50
             Invoke-PSSessionConfigurationRegistrationJob -Servers $Servers -ThrottleLimit $ThrottleLimit
