@@ -951,7 +951,7 @@ function Set-RabbitMqClusterConfiguration
             Out-Null
 
         Write-Verbose "Setting RabbitMQ user as administrator: $($RabbitMqCredential.UserName)"
-        rabbitmqctl set_user_tags $RelativityMqCredential.UserName administrator | Out-Null
+        rabbitmqctl set_user_tags $RabbitMqCredential.UserName administrator | Out-Null
 
         Write-Verbose "Creating Relativity virtual host"
         rabbitmqctl add_vhost Relativity | Out-Null
