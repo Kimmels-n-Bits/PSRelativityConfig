@@ -57,7 +57,7 @@ function Get-RelativityInstance
         [Parameter(Mandatory = $false)]
         [PSCredential] $EDDSDBOCredential,
         [Parameter(Mandatory = $false)]
-        [PSCredential] $RabbitMQCredential
+        [PSCredential] $RabbitMQCredential #TODO refactor/remove
     )
 
     Begin
