@@ -21,10 +21,10 @@ class Template_Class : Plan
 
     Init()
     {
-        # Instantiate a [Plan] to execute first.
+        # ex. Instantiate a [Plan] to execute first.
         $this.Tasks.Add([Plan_New_PSSession]::new($Hostnames, $Credentials, $SessionName))
 
-        # Instantiate many [Task] objects to run next.
+        # ex. Instantiate many [Task] objects to run next.
         $this.Hostnames | ForEach-Object {
             $t = [Task_HW_Info]::new($_)
             $this.Tasks.Add($t)
@@ -36,10 +36,9 @@ class Template_Class : Plan
 
     <#  OVERRIDE - Use this method to customize the result returned to pipeline.
         By default, all Task results will be returned as an array.
-        
     Final()
     {
-        $this.Result = "Something"
+        $this.Result = <Any object type>
     }
     #>
 }

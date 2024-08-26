@@ -12,6 +12,7 @@ class Task
     hidden [System.Object] $ScriptBlock
     [String]$SessionName
     [TaskStatus]$Status = 30
+    [String]$Runtime = "0"
 
     Task() {}
 
@@ -19,6 +20,7 @@ class Task
 
     [System.Object]Run()
     {
+        $_timer = [System.Diagnostics.Stopwatch]::StartNew()
         $this.Status = 20
 
         try {
@@ -49,6 +51,8 @@ class Task
         }
 
         $this.Final()
+        $_timer.Stop()
+        $this.Runtime = $this.TimeFormat($_timer.Elapsed)
         return $this.Result
     }
 
@@ -103,6 +107,17 @@ class Task
         $h.Latency = $t.Latency
 
         return $h
+    }
+
+    hidden [String]TimeFormat([TimeSpan]$elapsed)
+    {
+        $_time = "{0:D2}:{1:D2}:{2:D2}.{3:D3}" -f `
+            $elapsed.Hours, `
+            $elapsed.Minutes, `
+            $elapsed.Seconds, `
+            $elapsed.Milliseconds
+        
+        return $_time
     }
 
     [Int32]Progress()

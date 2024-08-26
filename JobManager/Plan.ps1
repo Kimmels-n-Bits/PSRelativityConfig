@@ -9,7 +9,9 @@ class Plan : Task
 
     [System.Object]Run()
     {
+        $_timer = [System.Diagnostics.Stopwatch]::StartNew()
         $this.Status = 20
+
         $_m1 = "`n[$($this.Name)]`tStarting Async Run"
         $_m2 = "`n[$($this.Name)]`tStarting Sync Run"
         $this.Async ? $(Write-Host $_m1 -ForegroundColor Cyan) : $(Write-Host $_m2 -ForegroundColor Cyan)
@@ -74,6 +76,8 @@ class Plan : Task
         }
 
         $this.Final()
+        $_timer.Stop()
+        $this.Runtime = $this.TimeFormat($_timer.Elapsed)
         return $this.Result
     }
 
