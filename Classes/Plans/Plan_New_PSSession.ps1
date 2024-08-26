@@ -8,7 +8,7 @@ class Plan_New_PSSession : Plan
         $this.Init()
     }
     Plan_New_PSSession($hostnames, $sessionName, $credential, $async)
-    { 
+    {
         $this.Hostnames = $hostnames
         $this.SessionName = $sessionName
         $this.Credentials = $credential

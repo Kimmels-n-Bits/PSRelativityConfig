@@ -132,6 +132,7 @@ class Task
         {
             $this.Tasks | ForEach-Object {
                 if ([Int32]$_.Status -eq 1) { $_scores += 100 }
+                elseif ([Int32]$_.Status -eq 10) { $_scores += $_.Progress() }
                 else { $_scores += 0 }
             }
         }

@@ -31,11 +31,6 @@ class Task_New_PSSession : Task
             {
                 Register-PSSessionConfiguration -RunAsCredential $NetworkCredential `
                         -Name $PSSessionName -NoServiceRestart *>$null
-                        #-WarningAction SilentlyContinue `
-                        #-InformationAction SilentlyContinue `
-                        #-ErrorAction SilentlyContinue `
-                        #-ProgressAction SilentlyContinue `
-                          # | Out-Null
             }
         }
         catch
