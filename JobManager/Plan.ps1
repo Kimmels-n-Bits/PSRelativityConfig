@@ -54,7 +54,7 @@ class Plan : Task
                     if ($_.Result.Count -gt 0) { $this.Result += $_.Result }
                     elseif ($_.Job -ne $null)
                     { 
-                        $this.Result += (Receive-Job -Job $_.Job) 
+                        $this.Result += (Receive-Job -Job $_.Job)
                     }
                     else { $this.Result += "ASYNCTASKFAIL" }
                 }
