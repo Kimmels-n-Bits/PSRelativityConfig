@@ -4,6 +4,9 @@ function Stop-Services
         .DESCRIPTION
             Stops Services on each host
 
+        .NOTES
+            REQUIRED RunAs Administrator session, if targetting localhost
+        
         .EXAMPLE
             Asyncronously stop each listed service, for each host.
             Stop-Service -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `

@@ -2,13 +2,17 @@ function Start-Services
 {
     <#
         .DESCRIPTION
-            Deletes a named PSSessionConfiguration for each host
+            Starts Services on each host
+        
+        .NOTES
+            REQUIRED RunAs Administrator session, if targetting localhost
 
         .EXAMPLE
-            Asyncronously deletes a session for each host
-            Remove-PSSession -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
-                        -Session "MySession" `
-                        -Async
+            Asyncronously Starts each listed service, for each host.
+            Start-Service -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
+                -Services @("kCura EDDS Agent Manager", "WinRM", "kCura Service Host Manager") `
+                -Session "mySession" `
+                -Async
     #>
     [CmdletBinding()]
     param (
