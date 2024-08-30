@@ -1,5 +1,12 @@
 class Task
 {
+    <#
+        .DESCRIPTION
+            [Task] Objects represent a single unit of work that will always execute as a job.
+
+        .FUNCTIONALITY
+            Can be executed directly using Run(), but is best used as a member of a [Plan].
+    #>
     [System.Collections.Generic.List[System.Object]]$Arguments = @()
     [Boolean]$Async = $false
     [PSCredential]$Credentials
@@ -13,8 +20,9 @@ class Task
     [String]$SessionName
     [TaskStatus]$Status = 30
     [String]$Runtime = "0"
-
-    Task() {}
+    [Boolean]$WriteProgress
+    [Int32]$WriteProgressID = 0
+    [String]$WriteProgressActivity
 
     Init() {}
 
@@ -46,7 +54,6 @@ class Task
             }
         }
         catch {
-            Write-Host "FAILED:`n$($_)" -ForegroundColor Red
             $this.Status = 0
         }
 

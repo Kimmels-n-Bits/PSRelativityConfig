@@ -1,9 +1,25 @@
 class Plan : Task
 {
+    <#
+        .DESCRIPTION
+            Acts as an orchestrator to [Task] and [Plan] Objects
+
+        .FUNCTIONALITY
+            Using Run() will iterate over $Tasks, track run status, and float results up.
+            Overriding Final() can customize return results.
+
+        .PARAMETER Hostnames
+            List of hostnames to execute $Tasks against
+
+        .PARAMETER Tasks
+            List of [Task] or [Plan] objects to Run()
+
+        .PARAMETER MonitorPolling
+            Intervals in seconds to check on running jobs
+    #>
     [System.Collections.Generic.List[String]]$Hostnames = @()
     [System.Collections.Generic.List[Task]]$Tasks = @()
     hidden [Int32]$MonitorPolling = 3
-    hidden [Int32]$TaskThrottle = 5
 
     Plan() {}
 
@@ -12,14 +28,14 @@ class Plan : Task
         $_timer = [System.Diagnostics.Stopwatch]::StartNew()
         $this.Status = 20
 
-        $_m1 = "`n[$($this.Name)]`tStarting Async Run"
-        $_m2 = "`n[$($this.Name)]`tStarting Sync Run"
-        $this.Async ? $(Write-Host $_m1 -ForegroundColor Cyan) : $(Write-Host $_m2 -ForegroundColor Cyan)
+        $this.UpdateOutput(2, $($this.Async ? "[$($this.Name)]`tStarting Async Run" : "[$($this.Name)]`tStarting Sync Run"))
+        $this.UpdateProgress($this.WriteProgressActivity, "Starting...")
 
         $this.Tasks | ForEach-Object {
             if ($_ -is [Plan])
             {
-                Write-Host "[$($this.Name)]`tRunning $($_.Name)"
+                $this.UpdateOutput(2, "[$($this.Name)]`tRunning $($_.Name)")
+                $this.UpdateProgress($this.WriteProgressActivity, "[$($this.Name)] Running $($_.Name)")
                 $_.Run()
             }
             else
@@ -27,14 +43,17 @@ class Plan : Task
                 $_host = $this.HostCheck($_.Hostname)
                 if ($_host.isLive)
                 {
-                    Write-Host "[$($this.Name)]`tRunning $($_.Name) on $($_.Hostname)"
+                    $this.UpdateOutput(1, "[$($this.Name)]`tRunning $($_.Name) on $($_.Hostname)")
+                    $this.UpdateProgress($this.WriteProgressActivity, "[$($this.Name)] Running $($_.Name) on $($_.Hostname)")
+
                     $_.IsLocal = $_host.IsLocal
                     $_.Async = $this.Async
                     $_.Run()
                 }
                 else
                 {
-                    Write-Host "[$($this.Name)]`tSkipped $($_.Name) on $($_.Hostname)" -ForegroundColor Red
+                    $this.UpdateOutput(0, "[$($this.Name)]`tSkipped $($_.Name) on $($_.Hostname)")
+                    $this.UpdateProgress($this.WriteProgressActivity, "[$($this.Name)] Skipped $($_.Name) on $($_.Hostname)")
                     $_.Status = 10
                 }
             }
@@ -81,15 +100,53 @@ class Plan : Task
         return $this.Result
     }
 
+    [void]UpdateProgress([String]$activity, [String]$status)
+    {
+        if (($script:OutputProgress) -and ($this.WriteProgress))
+        {
+            if (-not $this.WriteProgressActivity) # Default Activity
+            {
+                $_m1 = "[$($this.Name)] Async Run"
+                $_m2 = "[$($this.Name)] Sync Run"
+                $this.WriteProgressActivity = $($this.Async ? $_m1 : $_m2)
+                $activity = $this.WriteProgressActivity
+            }
+            Write-Progress -Id $this.WriteProgressID -Activity $activity -Status $status -PercentComplete $this.Progress()
+        }
+    }
+
+    [void]UpdateOutput([Int32]$style, [String]$message)
+    {
+        if ($script:OutputLog)
+        {
+            <#TODO WRITE TO LOG FILE #>
+        }
+
+        if ($script:OutputCLI)
+        {
+            switch ($style) {
+                0 { Write-Host $message -ForegroundColor Red }
+                1 { Write-Host $message }
+                2 { Write-Host $message -ForegroundColor Cyan }
+                Default { Write-Host $message }
+            }
+            
+        }
+    }
+
     [void]MonitorTasks()
     {
         <# Status Updates for asynchronous tasks occur here, since they cant update themselves. #>
-        if ($this.Status -eq 20) { Write-Host "`n[$($this.Name)]`tMonitoring..." -ForegroundColor Cyan }
+        $this.UpdateOutput(2, "[$($this.Name)]`tWaiting for Job completion...")
+
         while ($this.Status -eq 20)
         {
             $_flag0 = $false
             $_flag10 = $false
             $_flag20 = $false
+
+            $this.UpdateProgress($this.WriteProgressActivity, "[$($this.Name)] Waiting for Job completion...")
+
             foreach($t in $this.Tasks) {
                 if ($t -is [Plan])
                 {
@@ -123,7 +180,8 @@ class Plan : Task
                 elseif($_flag10) { $this.Status = 10 }
                 else { $this.Status = 1 }
 
-                Write-Host "[$($this.Name)]`tExited with status '$($this.Status)'`n" -ForegroundColor Cyan
+                $this.UpdateOutput(2, "[$($this.Name)]`tExited with status '$($this.Status)'`n")
+                $this.UpdateProgress($this.WriteProgressActivity, "[$($this.Name)] Exited with status '$($this.Status)'")
             }
         }
     }
