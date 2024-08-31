@@ -18,7 +18,7 @@ class Plan_New_PSSession : Plan
 
     Init()
     {
-        if($this.SessionName -eq "")
+        if(-not $this.SessionName)
         {
             $this.SessionName = "SESS$(-join ((0..9) | Get-Random -Count 5))"
         }

@@ -136,7 +136,7 @@ class Plan : Task
 
     [void]MonitorTasks()
     {
-        <# Status Updates for asynchronous tasks occur here, since they cant update themselves. #>
+        <# Status Updates for asynchronous tasks occur here, since they dont update themselves. #>
         $this.UpdateOutput(2, "[$($this.Name)]`tWaiting for Job completion...")
 
         while ($this.Status -eq 20)
