@@ -25,4 +25,11 @@ class Plan_CopyFiles : Plan
             $this.Tasks.Add($t)
         }
     }
+
+    Final()
+    {
+        $this.Hostnames | ForEach-Object {
+            Write-Output "[$_]`tCopyTo: $($this.CopyToPath)"
+        }
+    }
 }

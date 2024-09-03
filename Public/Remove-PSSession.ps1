@@ -14,12 +14,13 @@ function Remove-PSSession
     param (
         [Switch]$Async,
         [System.Collections.Generic.List[String]]$Hosts = @(),
-        [String]$Session
+        [String]$Session,
+        [Switch]$WriteProgress,
+        [Int32]$WriteProgressID = 0
     )
 
     $Task = [Plan_Remove_PSSession]::new($Hosts, $Session, $Async)
-    $Results = $Task.Run()
+    if ($WriteProgress) { $Task.WriteProgress = $true; $Task.WriteProgressID = $WriteProgressID }    
 
-    Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
-    Write-Host "Hosts: $($Hosts.count)"
+    $Results = $Task.Run()
 }

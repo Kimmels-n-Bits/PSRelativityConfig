@@ -1,0 +1,516 @@
+{
+  "Name": "LVDSHDRELINS001",
+  "FriendlyName": "LVDSHDRELINS001",
+  "Servers": [
+    {
+      "Name": "LVDSHDRELPDF001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELLSY001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELREX001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELCAG001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELDTS001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELAGT002",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELAGT001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        0
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "DefaultAgents": null,
+        "InstallAgents": null,
+        "UseWinAuth": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELDSQ001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        2
+      ],
+      "ResponseFileProperties": {
+        "FullTextDir": "N:\\Fulltext\\",
+        "LdfDir": "L:\\Logs\\",
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "UseWinAuth": null,
+        "DatabaseBackupDir": "K:\\Backup\\",
+        "DistributedSqlInstance": "LVDSHDRELDSQ001",
+        "InstallDistributedDatabase": null,
+        "MdfDir": "M:\\Data\\"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELESQ001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        3
+      ],
+      "ResponseFileProperties": {
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "RelativityInstanceName": "LVDSHDRELINS001",
+        "LdfDir": "L:\\Logs\\",
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "CacheLocation": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\DCC\\",
+        "UseWinAuth": null,
+        "DatabaseBackupDir": "K:\\Backup\\",
+        "DefaultFileRepository": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\REPO\\01\\",
+        "FullTextDir": "N:\\Fulltext\\",
+        "EddsFileShare": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\REPO\\01\\",
+        "InstallPrimaryDatabase": null,
+        "MdfDir": "M:\\Data\\",
+        "DtSearchIndexPath": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\DTS\\"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELSCS001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        4
+      ],
+      "ResponseFileProperties": {
+        "SqlInstanceServerName": "LVDSHDRELESQ001",
+        "UseWinAuth": null,
+        "SecretStoreInstallDir": "C:\\Program Files\\Relativity Secret Store\\"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELMSG001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        5
+      ],
+      "ResponseFileProperties": {
+        "TlsEnabled": "1",
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "ServiceBusProvider": null,
+        "ServiceNamespace": "Relativity",
+        "UseWinAuth": null,
+        "ServerFQDN": "lvdshdrmq.oasisdiscovery.com",
+        "InstallServiceBus": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELMSG002",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        5
+      ],
+      "ResponseFileProperties": {
+        "TlsEnabled": "1",
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "ServiceBusProvider": null,
+        "ServiceNamespace": "Relativity",
+        "UseWinAuth": null,
+        "ServerFQDN": "lvdshdrmq.oasisdiscovery.com",
+        "InstallServiceBus": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELMSG003",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        5
+      ],
+      "ResponseFileProperties": {
+        "TlsEnabled": "1",
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "ServiceBusProvider": null,
+        "ServiceNamespace": "Relativity",
+        "UseWinAuth": null,
+        "ServerFQDN": "lvdshdrmq.oasisdiscovery.com",
+        "InstallServiceBus": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWEB002",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        6
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "EnableWinAuth": "0",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "UseWinAuth": null,
+        "InstallWeb": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWEB001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        6
+      ],
+      "ResponseFileProperties": {
+        "InstallDir": "C:\\Program Files\\kCura Corporation\\Relativity\\",
+        "EnableWinAuth": "0",
+        "PrimarySqlInstance": "LVDSHDRELESQ001",
+        "UseWinAuth": null,
+        "InstallWeb": null
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELPQM001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        8
+      ],
+      "ResponseFileProperties": {
+        "WorkerNetworkPath": "\\\\lvdshdrelpsq001\\InvariantWorker\\",
+        "IdentityServerUrl": "https://lvdshdrelweb001.oasisdiscovery.com/Relativity/Identity",
+        "LdfDir": "L:\\Logs",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "QueueManagerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\QueueManager\\",
+        "UseWinAuth": null,
+        "RelativitySqlInstance": "LVDSHDRELESQ001",
+        "NistPackagePath": null,
+        "DataFilesNetworkPath": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\REPO\\01\\",
+        "MdfDir": "M:\\Data",
+        "InstallQueueManager": null,
+        "DtSearchIndexPath": "\\\\oasisdiscovery\\dev\\LVDSHDRELINS001\\DTS\\"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWRK005",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        7
+      ],
+      "ResponseFileProperties": {
+        "InstallWorker": null,
+        "WorkerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\Worker\\",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "RelativitySqlInstance": "LVDSHDRELESQ001"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWRK004",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        7
+      ],
+      "ResponseFileProperties": {
+        "InstallWorker": null,
+        "WorkerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\Worker\\",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "RelativitySqlInstance": "LVDSHDRELESQ001"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWRK003",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        7
+      ],
+      "ResponseFileProperties": {
+        "InstallWorker": null,
+        "WorkerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\Worker\\",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "RelativitySqlInstance": "LVDSHDRELESQ001"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWRK002",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        7
+      ],
+      "ResponseFileProperties": {
+        "InstallWorker": null,
+        "WorkerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\Worker\\",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "RelativitySqlInstance": "LVDSHDRELESQ001"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    },
+    {
+      "Name": "LVDSHDRELWRK001",
+      "IsOnline": true,
+      "Install": false,
+      "Role": [
+        7
+      ],
+      "ResponseFileProperties": {
+        "InstallWorker": null,
+        "WorkerInstallPath": "C:\\Program Files\\kCura Corporation\\Invariant\\Worker\\",
+        "SqlInstance": "LVDSHDRELPSQ001",
+        "RelativitySqlInstance": "LVDSHDRELESQ001"
+      },
+      "NetworkCredential": null,
+      "ServiceAccountCredential": null,
+      "EDDSDBOCredential": null,
+      "RabbitMQCredential": null,
+      "InstallerBundle": null,
+      "InstallerDirectory": null,
+      "PSSessionName": null
+    }
+  ],
+  "NetworkCredential": {
+    "UserName": "OASISDISCOVERY\\msolorio",
+    "Password": {
+      "Length": 20
+    }
+  },
+  "ServiceAccountCredential": {
+    "UserName": "ms@oasisdiscovery.com",
+    "Password": {
+      "Length": 20
+    }
+  },
+  "EDDSDBOCredential": {
+    "UserName": "EDDSDBO",
+    "Password": {
+      "Length": 20
+    }
+  },
+  "RabbitMQCredential": {
+    "UserName": "relativity",
+    "Password": {
+      "Length": 28
+    }
+  },
+  "InstallerBundle": null,
+  "InstallerDirectory": null,
+  "PSSessionName": null
+}

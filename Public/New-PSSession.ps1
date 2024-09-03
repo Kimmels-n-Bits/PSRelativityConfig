@@ -15,7 +15,9 @@ function New-PSSession
         [Switch]$Async,
         [PSCredential]$Credentials,
         [System.Collections.Generic.List[String]]$Hosts = @(),
-        [String]$Session
+        [String]$Session,
+        [Switch]$WriteProgress,
+        [Int32]$WriteProgressID = 0
     )
 
     if($Session -eq "")
@@ -24,10 +26,9 @@ function New-PSSession
     }
 
     $Task = [Plan_New_PSSession]::new($Hosts, $Session, $Credentials, $Async)
-    $Results = $Task.Run()
+    if ($WriteProgress) { $Task.WriteProgress = $true; $Task.WriteProgressID = $WriteProgressID }
 
-    Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
-    Write-Host "Hosts: $($Hosts.count)"
+    $Results = $Task.Run()
 
     return $Session
 }

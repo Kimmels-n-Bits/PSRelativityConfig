@@ -1,5 +1,6 @@
 class Task_CopyFile : Task
 {
+    #TODO REFACTOR to use ROBOCOPY
     [String]$SourcePath = ""
     [String]$CopyToPath = "C:\sysprep\"
     [String]$ExtractToPath = ""

@@ -22,7 +22,9 @@ function Copy-Files
         [System.Collections.Generic.List[String]]$Hosts = @(),
         [String]$Session,
         [String]$Source,        
-        [Switch]$Unzip
+        [Switch]$Unzip,
+        [Switch]$WriteProgress,
+        [Int32]$WriteProgressID = 0
     )
 
     $Task = [Plan_CopyFiles]::new(
@@ -34,8 +36,9 @@ function Copy-Files
         $Unzip,
         $Async)
 
+    if($WriteProgress) { $Task.WriteProgress = $true; $Task.WriteProgressID = $WriteProgressID }
     $Results = $Task.Run()
 
-    Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
-    Write-Host "Hosts: $($Hosts.count)"
+    #Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
+    #Write-Host "Hosts: $($Hosts.count)"
 }
