@@ -13,18 +13,18 @@ enum Software
 }
 
 <#
-.SYNOPSIS
-Enum for defining server roles within a Relativity environment.
+    .SYNOPSIS
+    Enum for defining server roles within a Relativity environment.
 
-.DESCRIPTION
-The RelativityServerRole enum enumerates the various roles that a server can be assigned in a Relativity deployment.
-Each role corresponds to specific functionalities and responsibilities within the system.
+    .DESCRIPTION
+    The RelativityServerRole enum enumerates the various roles that a server can be assigned in a Relativity deployment.
+    Each role corresponds to specific functionalities and responsibilities within the system.
 
-.EXAMPLE
-[RelativityServerRole]::Agent
-Demonstrates how to reference the Agent role from the enum.
+    .EXAMPLE
+    [RelativityServerRole]::Agent
+    Demonstrates how to reference the Agent role from the enum.
 
-.NOTES
+    .NOTES
 #>
 enum RelativityServerRole
 {
@@ -40,26 +40,26 @@ enum RelativityServerRole
 }
 
 <#
-.SYNOPSIS
-Represents a server in a Relativity environment, encapsulating roles, status, and configuration.
+    .SYNOPSIS
+    Represents a server in a Relativity environment, encapsulating roles, status, and configuration.
 
-.DESCRIPTION
-The RelativityServer class models a server within a Relativity environment. It holds information about the server's roles,
-online status, and configuration properties necessary for each role. The class provides methods to manage server roles,
-configure properties, and validate server readiness.
+    .DESCRIPTION
+    The RelativityServer class models a server within a Relativity environment. It holds information about the server's roles,
+    online status, and configuration properties necessary for each role. The class provides methods to manage server roles,
+    configure properties, and validate server readiness.
 
-.EXAMPLE
-$server = [RelativityServer]::new("ServerName")
-Creates a new RelativityServer instance with the specified server name.
+    .EXAMPLE
+    $server = [RelativityServer]::new("ServerName")
+    Creates a new RelativityServer instance with the specified server name.
 
-.EXAMPLE
-$server.AddRole([RelativityServerRole]::Agent)
-Adds the Agent role to the server and configures related properties.
+    .EXAMPLE
+    $server.AddRole([RelativityServerRole]::Agent)
+    Adds the Agent role to the server and configures related properties.
 
-.PARAMETER Name
-The name of the server. This should be a valid network name.
+    .PARAMETER Name
+    The name of the server. This should be a valid network name.
 
-.NOTES
+    .NOTES
 #>
 class RelativityServer
 {
@@ -217,21 +217,21 @@ class RelativityServer
     }
 
     <#
-    .SYNOPSIS
-    Adds a role to the server and configures default properties for that role.
+        .SYNOPSIS
+        Adds a role to the server and configures default properties for that role.
 
-    .DESCRIPTION
-    The AddRole method assigns a specified role to the server. It automatically populates the server's
-    configuration with default properties relevant to the role, avoiding overwriting existing values.
+        .DESCRIPTION
+        The AddRole method assigns a specified role to the server. It automatically populates the server's
+        configuration with default properties relevant to the role, avoiding overwriting existing values.
 
-    .PARAMETER role
-    The role to be added to the server. Must be a valid value from RelativityServerRole enum.
+        .PARAMETER role
+        The role to be added to the server. Must be a valid value from RelativityServerRole enum.
 
-    .EXAMPLE
-    $server.AddRole([RelativityServerRole]::Agent)
-    Adds the Agent role to the server.
+        .EXAMPLE
+        $server.AddRole([RelativityServerRole]::Agent)
+        Adds the Agent role to the server.
 
-    .NOTES
+        .NOTES
     #>
     [void] AddRole([RelativityServerRole] $role)
     {
