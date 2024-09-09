@@ -17,11 +17,11 @@ function Copy-Files
     [CmdletBinding()]
     param (
         [Switch]$Async,
-        [String]$CopyTo,    
+        [String]$CopyTo,
         [String]$ExtractTo,
         [System.Collections.Generic.List[String]]$Hosts = @(),
         [String]$Session,
-        [String]$Source,        
+        [String]$Source,
         [Switch]$Unzip,
         [Switch]$WriteProgress,
         [Int32]$WriteProgressID = 0
