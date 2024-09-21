@@ -7,9 +7,10 @@ class Instance
         .EXAMPLE
             
     #>
+    Hidden [CredentialPack]$CredPack = [CredentialPack]::new()
     [String] $Name
     [System.Collections.Generic.List[Server]] $Servers = @()
-    #[InstallerBundle] $InstallerBundle
+    [InstallerBundle] $InstallerBundle = [InstallerBundle]::new()
     [String] $PathCommonDefaults
     [String] $PathInstallDirectory
     [String] $PathRMQDefaults

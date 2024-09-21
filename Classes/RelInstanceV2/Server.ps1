@@ -24,6 +24,7 @@ class Server
         $this.ResponseFileProperties = @{}
 
         # COMMON
+        if($this.ParentInstance -eq $null) { Write-Warning "[ERROR]Server missing ParentInstance reference"; return }
         if (Test-Path $this.ParentInstance.PathCommonDefaults)
         {
             Get-Content -Path $this.ParentInstance.PathCommonDefaults | ForEach-Object {
