@@ -22,6 +22,7 @@ function Stop-Services
         [String]$Session
     )
 
+    #TODO investigate support for sessionless start/stops
     $Task = [Plan_Service]::new($Hosts, $Session, [Action]::Stop, $Services, $Async)
     $Results = $Task.Run()
 
