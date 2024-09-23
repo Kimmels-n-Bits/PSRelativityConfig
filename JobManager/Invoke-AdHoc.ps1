@@ -16,10 +16,11 @@ function Invoke-AdHoc
     param(
         [Switch]$Async,
         [System.Collections.Generic.List[String]]$hosts = @(),
-        [System.Object]$script
+        [System.Object]$script,
+        [String]$Session
     )
 
-    $Plan = [Plan_AdHoc]::new($hosts, $script, $Async)
+    $Plan = [Plan_AdHoc]::new($hosts, $script, $Session, $Async)
     $Plan.Run()
 
     return $Plan

@@ -15,11 +15,12 @@ class Plan_AdHoc : Plan
                 $myPlan.Run()
 
     #>
-    Plan_AdHoc($hostnames, $script, $async)
+    Plan_AdHoc($hostnames, $script, $session, $async)
     { 
         $this.Hostnames = $hostnames
         $this.Async = $async
         $this.ScriptBlock = $script
+        $this.SessionName = $session
         $this.Init()
     }
 
