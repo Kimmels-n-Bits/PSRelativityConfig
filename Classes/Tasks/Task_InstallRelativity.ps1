@@ -35,6 +35,8 @@ class Task_InstallRelativity : Task
         Set-Content -Path $responsePath -Value $responseString
 
         <# Execute Installation #>
+        #TODO Factor in parameters for different roles.
+        #TODO PSQ-DSQ are mutually exclusive
         $cmdFile = Join-Path -Path $installBundle.RelativityStage -ChildPath "Relativity.Installer.exe"
         $cmd = "$($cmdFile) `
             -log $($installBundle.RelativityStage) `
