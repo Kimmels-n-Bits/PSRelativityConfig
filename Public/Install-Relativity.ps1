@@ -13,8 +13,10 @@ function Install-Relativity
         [Switch]$Async,    
         [System.Collections.Generic.List[Server]] $Servers = [System.Collections.Generic.List[Server]]::new(),
         [InstallerBundle]$InstallerBundle = [InstallerBundle]::new(),
-        [Switch]$Validate        
+        [Switch]$Validate,
+        [String]$SessionName
     )
+
 
     $Plan = [Plan_Install_Relativity]::new(
         $Servers,
@@ -22,6 +24,7 @@ function Install-Relativity
         $Validate,
         $Async)
     
+    #$Plan.SessionName = $s
     $Plan.Run()
 
     return $Plan

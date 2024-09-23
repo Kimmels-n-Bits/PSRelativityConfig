@@ -1,5 +1,11 @@
 class Plan_New_PSSession : Plan
 {
+    <#  .DESCRIPTION
+            Creates a PSConfiguration for each hostname
+
+        .FUNCTIONALITY
+            This object is best instantiated via its function New-PSSession
+    #>
     Plan_New_PSSession($hostnames, $credential, $async)
     { 
         $this.Hostnames = $hostnames

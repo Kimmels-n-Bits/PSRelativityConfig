@@ -6,9 +6,14 @@ function New-PSSession
 
         .EXAMPLE
             Asyncronously creates a session for each host, and lets script generate a name.
-            New-PSSession -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") 
-                        -Credentials $myCredentials
-                        -Async
+                $s = New-PSSession -Hosts @("HOST001", "HOST002") 
+                            -Credentials $myCredentials
+                            -Async
+
+            Syncronously creates a session for each host, and sets a SessionName
+                $s = New-PSSession -Hosts @("HOST001", "HOST002") 
+                            -Credentials $myCredentials
+                            -Session "myNewSession"
     #>
     [CmdletBinding()]
     param (

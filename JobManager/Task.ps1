@@ -20,7 +20,7 @@ class Task
     [String]$SessionName
     [TaskStatus]$Status = 30
     [String]$Runtime = "0"
-    [Boolean]$WriteProgress
+    [Boolean]$WriteProgress             # enable to allow this plan to write ProgressBar
     [Int32]$WriteProgressID = 0
     [String]$WriteProgressActivity
 

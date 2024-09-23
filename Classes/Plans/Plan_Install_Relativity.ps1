@@ -17,19 +17,31 @@ class Plan_Install_Relativity : Plan
 
     Init()
     {
+        $this.WriteProgress = $true
+        $this.WriteProgressActivity = "Executing Relativity Installer Workflows"
+
         <# PRECONFIG #>
-        $this.Tasks.Add([Plan_PreConfig]::new())
+        $this.WriteProgressActivity = "Executing PreConfuguration Plan"
+        $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.InstallerBundle.SxS)
+        $_preConfig.WriteProgress = $true
+        $_preConfig.WriteProgressID = 1
+        $this.Tasks.Add($_preConfig)
 
         <# VALIDATE #>
 
         <# INSTALL #>
+        $this.WriteProgressActivity = "Executing Relativity Installer"
         $this.Servers | ForEach-Object {
             $t = [Task_InstallRelativity]::new($_, $this.InstallerBundle)
             $this.Tasks.Add($t)
         }
 
         <# POST CONFIG #>
+        $this.WriteProgressActivity = "Executing PostConfig Plan"
         <# VALIDATE #>
+        $this.WriteProgressActivity = "Validating Relativity Installer Workflow"
+
+        $this.WriteProgressActivity = "Plan Completed"
     }
 
     <#  OVERRIDE - Use this method to customize the result returned to pipeline.

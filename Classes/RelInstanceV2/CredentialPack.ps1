@@ -18,4 +18,19 @@ class CredentialPack
     [String]$SQLPASSWORD
     [String]$SHAREDACCESSKEY        # RMQ account used for svcbus
     [String]$SHAREDACCESSKEYNAME
+
+
+
+    [PSCredential] CreateCredential([string]$username, [string]$password) {
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        return New-Object System.Management.Automation.PSCredential ($username, $securePassword)
+    }
+
+    [PSCredential] ADCredential() {
+        if(($this.ADun -eq "") -or ($this.ADpw -eq ""))
+        {
+            throw "ADun or ADpw are missing"
+        }
+        return $this.CreateCredential($this.ADun, $this.ADpw)
+    }
 }

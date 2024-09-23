@@ -1,4 +1,5 @@
 <# enable after original RelInstance is phased out
+#TODO is this needed?
 enum Installer
 {
     SecretStore
@@ -34,6 +35,8 @@ class InstallerBundle
     [String] $InvariantStage = "C:\RelInstall\Invariant\"
     [ValidateNotNullOrEmpty()]
     [String] $NISTPackageStage = "C:\RelInstall\Nist\"
+    [ValidateNotNullOrEmpty()]
+    [String] $SxS = "D:\Sources\sxs"
     
 
     InstallerBundle() {}
