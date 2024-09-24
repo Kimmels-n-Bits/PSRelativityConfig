@@ -21,7 +21,7 @@ class Plan_Install_Relativity : Plan
         $this.WriteProgressActivity = "Executing Relativity Installer Workflows"
 
         <# PRECONFIG #>
-        $this.WriteProgressActivity = "Executing PreConfuguration Plan"
+        $this.WriteProgressActivity = "Executing PreConfiguration Plan"
         $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.InstallerBundle.SxS)
         $_preConfig.WriteProgress = $true
         $_preConfig.WriteProgressID = 1

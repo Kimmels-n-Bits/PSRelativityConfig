@@ -108,6 +108,7 @@ class Task_PreConfig : Task
             "NET-WCF-TCP-PortSharing45"
         )
 
+        #TODO refactor to handle aws scenarios
         foreach ($feature in $features) {
             if (Get-WindowsFeature -Name $feature | Where-Object { $_.InstallState -ne "Installed" }) {
                 if($feature -eq "NET-Framework-Core")

@@ -12,6 +12,10 @@ class CredentialPack
     [String]$ADun                   # user for PSSession and remote execution
     [String]$ADpw
     [String]$EDDSDBOPASSWORD
+    [String]$RelUser                # Relativity user login
+    [String]$RelPassword
+    [String]$RMQun                  # RabbitMQ login
+    [String]$RMQpw
     [String]$SERVICEUSERNAME        # domain\user to run the service
     [String]$SERVICEPASSWORD
     [String]$SQLUSERNAME            # not needed with winauth=1
@@ -32,5 +36,37 @@ class CredentialPack
             throw "ADun or ADpw are missing"
         }
         return $this.CreateCredential($this.ADun, $this.ADpw)
+    }
+
+    [PSCredential] EDDSCredential() {
+        if(($this.EDDSDBOPASSWORD -eq ""))
+        {
+            throw "EDDSDBOPASSWORD is missing"
+        }
+        return $this.CreateCredential("EDDSDBO", $this.EDDSDBOPASSWORD)
+    }
+
+    [PSCredential] RMQLogin() {
+        if(($this.RMQun -eq "") -or ($this.RMQpw -eq ""))
+        {
+            throw "RMQun or RMQpw are missing"
+        }
+        return $this.CreateCredential($this.RMQun, $this.RMQpw)
+    }
+
+    [PSCredential] RelLogin() {
+        if(($this.RelUser -eq "") -or ($this.RelPassword -eq ""))
+        {
+            throw "RelUser or RelPassword are missing"
+        }
+        return $this.CreateCredential($this.RelUser, $this.RelPassword)
+    }
+
+    [PSCredential] ServiceCredential() {
+        if(($this.SERVICEUSERNAME -eq "") -or ($this.SERVICEPASSWORD -eq ""))
+        {
+            throw "SERVICEUSERNAME or SERVICEPASSWORD are missing"
+        }
+        return $this.CreateCredential($this.SERVICEUSERNAME, $this.SERVICEPASSWORD)
     }
 }
