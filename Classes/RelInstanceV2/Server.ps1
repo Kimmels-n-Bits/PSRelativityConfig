@@ -25,9 +25,9 @@ class Server
 
         # COMMON
         if($this.ParentInstance -eq $null) { Write-Warning "[ERROR]Server missing ParentInstance reference"; return }
-        if (Test-Path $this.ParentInstance.PathCommonDefaults)
+        if (Test-Path $this.ParentInstance.Paths.ResponseCommon)
         {
-            Get-Content -Path $this.ParentInstance.PathCommonDefaults | ForEach-Object {
+            Get-Content -Path $this.ParentInstance.Paths.ResponseCommon | ForEach-Object {
                 $key, $value = $_ -split '='
                 $this.SetProperty($key, $value)
             }
@@ -66,9 +66,9 @@ class Server
         {
             $this.SetProperty("INSTALLSERVICEBUS", "1")
 
-            if (Test-Path $this.ParentInstance.PathRMQDefaults)
+            if (Test-Path $this.ParentInstance.Paths.ResponseRMQ)
             {
-                Get-Content -Path $this.ParentInstance.PathRMQDefaults | ForEach-Object {
+                Get-Content -Path $this.ParentInstance.Paths.ResponseRMQ | ForEach-Object {
                     $key, $value = $_ -split '='
                     $this.SetProperty($key, $value)
                 }
@@ -85,9 +85,9 @@ class Server
         {
             $this.SetProperty("INSTALLWORKER", "1")
 
-            if (Test-Path $this.ParentInstance.PathRMQDefaults)
+            if (Test-Path $this.ParentInstance.Paths.ResponseINV)
             {
-                Get-Content -Path $this.ParentInstance.PathInvariantDefaults | ForEach-Object {
+                Get-Content -Path $this.ParentInstance.Paths.ResponseINV | ForEach-Object {
                     $key, $value = $_ -split '='
                     $this.SetProperty($key, $value)
                 }
@@ -98,9 +98,9 @@ class Server
         {
             $this.SetProperty("INSTALLQUEUEMANAGER", "1")
 
-            if (Test-Path $this.ParentInstance.PathRMQDefaults)
+            if (Test-Path $this.ParentInstance.Paths.ResponseINV)
             {
-                Get-Content -Path $this.ParentInstance.PathInvariantDefaults | ForEach-Object {
+                Get-Content -Path $this.ParentInstance.Paths.ResponseINV | ForEach-Object {
                     $key, $value = $_ -split '='
                     $this.SetProperty($key, $value)
                 }

@@ -7,12 +7,12 @@ function Install-Relativity
         .FUNCTIONALITY
             [Server].Role will guide this operation.
             [Server].ResponseFileProperties will guide installation parameters.
-            [InstallerBundle] will provide remote and local installation paths.
+            [PathTable] will provide remote and local installation paths.
     #>
     param(
         [Switch]$Async,    
         [System.Collections.Generic.List[Server]] $Servers = [System.Collections.Generic.List[Server]]::new(),
-        [InstallerBundle]$InstallerBundle = [InstallerBundle]::new(),
+        [PathTable]$Paths = [PathTable]::new(),
         [Switch]$Validate,
         [String]$SessionName
     )
@@ -20,7 +20,7 @@ function Install-Relativity
 
     $Plan = [Plan_Install_Relativity]::new(
         $Servers,
-        $InstallerBundle,
+        $Paths,
         $Validate,
         $Async)
     

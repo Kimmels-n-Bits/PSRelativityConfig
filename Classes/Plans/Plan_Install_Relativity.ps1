@@ -1,14 +1,14 @@
 class Plan_Install_Relativity : Plan
 {
-    [InstallerBundle]$InstallerBundle = [InstallerBundle]::new()
+    [PathTable]$Paths = [PathTable]::new()
     [System.Collections.Generic.List[Server]]$Servers = @()
     [Boolean]$Validate
 
     Plan_Install_Relativity() { $this.Init() }
-    Plan_Install_Relativity($servers, $installerBundle, $validate, $async)
+    Plan_Install_Relativity($servers, $Paths, $validate, $async)
     { 
         $this.Servers = $servers
-        $this.InstallerBundle = $installerBundle
+        $this.Paths = $Paths
         $this.Validate = $validate
         $this.Async = $async
         $this.Hostnames = $servers.name
@@ -22,7 +22,7 @@ class Plan_Install_Relativity : Plan
 
         <# PRECONFIG #>
         $this.WriteProgressActivity = "Executing PreConfiguration Plan"
-        $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.InstallerBundle.SxS)
+        $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.Paths.SxS)
         $_preConfig.WriteProgress = $true
         $_preConfig.WriteProgressID = 1
         $this.Tasks.Add($_preConfig)
@@ -32,7 +32,7 @@ class Plan_Install_Relativity : Plan
         <# INSTALL #>
         $this.WriteProgressActivity = "Executing Relativity Installer"
         $this.Servers | ForEach-Object {
-            $t = [Task_InstallRelativity]::new($_, $this.InstallerBundle)
+            $t = [Task_InstallRelativity]::new($_, $this.Paths)
             $this.Tasks.Add($t)
         }
 

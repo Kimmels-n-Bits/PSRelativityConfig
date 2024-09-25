@@ -1,12 +1,12 @@
 class Task_InstallRelativity : Task
 {
     [Server]$Server = [Server]::new()
-    [InstallerBundle]$InstallerBundle = [InstallerBundle]::new()
+    [PathTable]$Paths = [PathTable]::new()
 
     Task_InstallRelativity($server, $installBundle)
     {
         $this.Server = $server
-        $this.InstallerBundle = $installBundle
+        $this.Paths = $installBundle
         $this.Hostname = $this.Server.Name
         $this.Init()
     }
@@ -17,7 +17,7 @@ class Task_InstallRelativity : Task
             $this.Server.Name,
             $this.Server.Role,
             $this.Server.ResponseFileProperties,
-            $this.InstallerBundle,
+            $this.Paths,
             $this.Server.ParentInstance.CredPack
             )
     }

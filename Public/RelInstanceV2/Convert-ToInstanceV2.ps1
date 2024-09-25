@@ -1,16 +1,19 @@
 function Convert-ToInstanceV2
 {
-    <#
+    <# 
         .DESCRIPTION
             Interim function to bridge data model differences between RelInstance and RelInstanceV2.
 
         .EXAMPLE
             Typical usage will perform initial conversion.
             Optionally move on to intialize paths and server properties (like responsefile params)
+
                 $RelInstance2 = Convert-ToInstanceV2 -instance $RelInstance
-                $RelInstance2.PathCommonDefaults = ".\Public\Defaults\LVDSHDRELINS001\_Common.txt"
-                $RelInstance2.PathRMQDefaults = ".\Public\Defaults\LVDSHDRELINS001\RMQ.txt"
-                $RelInstance2.PathInvariantDefaults = ".\Public\Defaults\LVDSHDRELINS001\Invariant.txt"
+
+                $RelInstance2.Paths.ResponseCommon = ".\Public\Defaults\LVDSHDRELINS001\_Common.txt"
+                $RelInstance2.Paths.ResponseRMQ = ".\Public\Defaults\LVDSHDRELINS001\RMQ.txt"
+                $RelInstance2.Paths.ResponseINV = ".\Public\Defaults\LVDSHDRELINS001\Invariant.txt"
+                
                 $RelInstance2.Servers | ForEach-Object {
                     $_.InitProperties()
                 }

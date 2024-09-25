@@ -10,23 +10,20 @@ class Instance
     Hidden [CredentialPack]$CredPack = [CredentialPack]::new()
     [String] $Name
     [System.Collections.Generic.List[Server]] $Servers = @()
-    [InstallerBundle] $InstallerBundle = [InstallerBundle]::new()
-    [String] $PathCommonDefaults
-    [String] $PathInstallDirectory
-    [String] $PathRMQDefaults
-    [String] $PathInvariantDefaults
+    [PathTable] $Paths = [PathTable]::new()
+
 
     [String]ToJson()
     {
         # Create a working object to scrub data with
         $_obj = [PSCustomObject]@{
             Name = $this.Name
-            PathCommonDefaults = $this.PathCommonDefaults
-            PathInstallDirectory = $this.PathInstallDirectory
-            PathRMQDefaults = $this.PathRMQDefaults
-            PathInvariantDefaults = $this.PathInvariantDefaults
+            Paths = [PSCustomObject]::new()
             Servers = [System.Collections.Generic.List[PSCustomObject]]::new()
         }
+
+        # Paths to PSCustomObject
+        $_obj.Paths = $this.Paths | Select-Object -Property *
 
         # Strip + Scrub unserializable [Server] properties
         $this.Servers | ForEach-Object {
@@ -54,21 +51,32 @@ class Instance
     FromJson($json)
     {
         try {
-            $reconstitutedObj = $json | ConvertFrom-Json
+            $jsonObj = $json | ConvertFrom-Json
             Write-Warning "Importing will use the json exactly, and will not validate Response Params."
         }
         catch {
             throw "Invalid JSON format: $($_.Exception.Message)"
         }
         
+        if ($jsonObj.Name) { $this.Name = $jsonObj.Name }
 
-        $this.Name = $reconstitutedObj.Name
-        $this.PathCommonDefaults = $reconstitutedObj.PathCommonDefaults
-        $this.PathInstallDirectory = $reconstitutedObj.PathInstallDirectory
-        $this.PathRMQDefaults = $reconstitutedObj.PathRMQDefaults
-        $this.PathInvariantDefaults = $reconstitutedObj.PathInvariantDefaults
+        if ($jsonObj.Paths.CAAT) { $this.Paths.CAAT = $jsonObj.Paths.CAAT }
+        if ($jsonObj.Paths.SecretStore) { $this.Paths.SecretStore = $jsonObj.Paths.SecretStore }
+        if ($jsonObj.Paths.Relativity) { $this.Paths.Relativity = $jsonObj.Paths.Relativity }
+        if ($jsonObj.Paths.Invariant) { $this.Paths.Invariant = $jsonObj.Paths.Invariant }
+        if ($jsonObj.Paths.NIST) { $this.Paths.NIST = $jsonObj.Paths.NIST }
+        if ($jsonObj.Paths.CAATStage) { $this.Paths.CAATStage = $jsonObj.Paths.CAATStage }
+        if ($jsonObj.Paths.SecretStoreStage) { $this.Paths.SecretStoreStage = $jsonObj.Paths.SecretStoreStage }
+        if ($jsonObj.Paths.RelativityStage) { $this.Paths.RelativityStage = $jsonObj.Paths.RelativityStage }
+        if ($jsonObj.Paths.ResponseCommon) { $this.Paths.ResponseCommon = $jsonObj.Paths.ResponseCommon }
+        if ($jsonObj.Paths.ResponseINV) { $this.Paths.ResponseINV = $jsonObj.Paths.ResponseINV }
+        if ($jsonObj.Paths.ResponseRMQ) { $this.Paths.ResponseRMQ = $jsonObj.Paths.ResponseRMQ }
+        if ($jsonObj.Paths.InvariantStage) { $this.Paths.InvariantStage = $jsonObj.Paths.InvariantStage }
+        if ($jsonObj.Paths.NISTPackageStage) { $this.Paths.NISTPackageStage = $jsonObj.Paths.NISTPackageStage }
+        if ($jsonObj.Paths.SxS) { $this.Paths.SxS = $jsonObj.Paths.SxS }
 
-        $reconstitutedObj.Servers | ForEach-Object {
+
+        $jsonObj.Servers | ForEach-Object {
             $_server = [Server]@{
                 Name = $_.Name
             }
