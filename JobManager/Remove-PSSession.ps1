@@ -15,12 +15,18 @@ function Remove-PSSession
         [Switch]$Async,
         [System.Collections.Generic.List[String]]$Hosts = @(),
         [String]$Session,
+        [String]$WriteProgressActivity,
         [Switch]$WriteProgress,
         [Int32]$WriteProgressID = 0
     )
 
-    $Task = [Plan_Remove_PSSession]::new($Hosts, $Session, $Async)
-    if ($WriteProgress) { $Task.WriteProgress = $true; $Task.WriteProgressID = $WriteProgressID }    
+    $Plan = [Plan_Remove_PSSession]::new($Hosts, $Session, $Async)
+    
+    $Plan.WriteProgress = $WriteProgress
+    $Plan.WriteProgressActivity = $WriteProgressActivity
+    $Plan.WriteProgressID = $WriteProgressID
 
-    $Results = $Task.Run()
+    $Results = $Plan.Run()
+
+    return $Plan
 }

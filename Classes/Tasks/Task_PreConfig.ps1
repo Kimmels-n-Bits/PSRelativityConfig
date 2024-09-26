@@ -21,16 +21,19 @@ class Task_PreConfig : Task
 
     hidden $ScriptBlock = {
         param($roles, $netSource)
-        Write-Output ":::: [$($env:COMPUTERNAME)]"
+
+        [System.Collections.Generic.List[String]]$Results = @()
+
+        $Results += ":::: [$($env:COMPUTERNAME)]"
 
         # Jumbo Frames
         # WARN: Interrupts Connection
         Set-NetAdapterAdvancedProperty -Name * -RegistryKeyword "*JumboPacket" -RegistryValue 9014
         $jumboFramesUpdated = Get-NetAdapterAdvancedProperty -Name * | Where-Object { $_.RegistryKeyword -eq "*JumboPacket" -and $_.RegistryValue -eq 9014 }
         if ($jumboFramesUpdated) {
-            Write-Output "Jumbo Frames updated successfully."
+            $Results += "Jumbo Frames updated successfully."
         } else {
-            Write-Output "Failed to update Jumbo Frames."
+            $Results += "Failed to update Jumbo Frames."
         }
 
         # Power Plan
@@ -38,9 +41,9 @@ class Task_PreConfig : Task
         powercfg.exe -SETACTIVE $powerPlanGUID
         $currentPlan = powercfg.exe /GETACTIVESCHEME
         if ($currentPlan -like "*$powerPlanGUID*") {
-            Write-Output "Power plan updated successfully."
+            $Results += "Power plan updated successfully."
         } else {
-            Write-Output "Failed to update power plan."
+            $Results += "Failed to update power plan."
         }
 
         # Windows Performance Settings
@@ -51,9 +54,9 @@ class Task_PreConfig : Task
         New-ItemProperty -Path $RegistryPath -Name "VisualFXSetting" -Value "2" -PropertyType DWORD -Force | Out-Null
         $visualFxSetting = Get-ItemProperty -Path $RegistryPath | Select-Object -ExpandProperty VisualFXSetting
         if ($visualFxSetting -eq 2) {
-            Write-Output "Windows Performance Settings updated successfully."
+            $Results += "Windows Performance Settings updated successfully."
         } else {
-            Write-Output "Failed to update Windows Performance Settings."
+            $Results += "Failed to update Windows Performance Settings."
         }
 
         # Processing Schedule Settings
@@ -67,9 +70,9 @@ class Task_PreConfig : Task
         New-ItemProperty -Path $registry_path -Name $registry_name -Value $registry_value -PropertyType DWORD -Force | Out-Null
         $prioritySetting = Get-ItemProperty -Path $registry_path | Select-Object -ExpandProperty $registry_name
         if ($prioritySetting -eq $registry_value) {
-            Write-Output "Processing Schedule Settings updated successfully."
+            $Results += "Processing Schedule Settings updated successfully."
         } else {
-            Write-Output "Failed to update Processing Schedule Settings."
+            $Results += "Failed to update Processing Schedule Settings."
         }
 
         # Paging File Size
@@ -77,19 +80,19 @@ class Task_PreConfig : Task
         if ($ComputerSystem) {
             $ComputerSystem.AutomaticManagedPageFile = $false
             $ComputerSystem | Set-CimInstance | Out-Null
-            Write-Output "Automatic Page File Management disabled."
+            $Results += "Automatic Page File Management disabled."
 
             $PageFile = Get-CimInstance -Query "SELECT * FROM Win32_PageFileSetting WHERE Name = 'C:\\pagefile.sys'"
             if ($PageFile) {
                 $PageFile.InitialSize = 4096
                 $PageFile.MaximumSize = 4096
                 $PageFile | Set-CimInstance | Out-Null
-                Write-Output "Paging File Size updated to 4096MB."
+                $Results += "Paging File Size updated to 4096MB."
             } else {
-                Write-Output "Failed to find or update the paging file settings."
+                $Results += "Failed to find or update the paging file settings."
             }
         } else {
-            Write-Output "Failed to retrieve ComputerSystem information."
+            $Results += "Failed to retrieve ComputerSystem information."
         }
 
         # Install .NET Framework
@@ -115,18 +118,18 @@ class Task_PreConfig : Task
                     if (Test-Path $netSource) {
                         Install-WindowsFeature -Name $feature -Source $netSource
                     } else {
-                        Write-Output "The path '$netSource' is unreachable."
+                        $Results += "The path '$netSource' is unreachable."
                     }                    
                 }
                 else { Install-WindowsFeature -Name $feature }
 
                 if (Get-WindowsFeature -Name $feature | Where-Object { $_.InstallState -eq "Installed" }) {
-                    Write-Output "$feature installed successfully."
+                    $Results += "$feature installed successfully."
                 } else {
-                    Write-Output "Failed to install $feature."
+                    $Results += "Failed to install $feature."
                 }
             } else {
-                Write-Output "$feature is already installed."
+                $Results += "$feature is already installed."
             }
         }
 
@@ -136,19 +139,19 @@ class Task_PreConfig : Task
         Set-ItemProperty -Path $dtcPath -Name NetworkDtcAccess -Value $dtcValue -Force
         $dtcAccess = Get-ItemProperty -Path $dtcPath | Select-Object -ExpandProperty NetworkDtcAccess
         if ($dtcAccess -eq $dtcValue) {
-            Write-Output "Microsoft DTC Network Access enabled."
+            $Results += "Microsoft DTC Network Access enabled."
         } else {
-            Write-Output "Failed to enable Microsoft DTC Network Access."
+            $Results += "Failed to enable Microsoft DTC Network Access."
         }
 
         Set-DtcNetworkSetting -InboundTransactionsEnabled $true -OutboundTransactionsEnabled $true -Confirm:$false
         $dtcSettings = Get-DtcNetworkSetting
         if ($dtcSettings.InboundTransactionsEnabled -and $dtcSettings.OutboundTransactionsEnabled) {
-            Write-Output "DTC Network Settings updated successfully."
+            $Results += "DTC Network Settings updated successfully."
         } else {
-            Write-Output "Failed to update DTC Network Settings."
+            $Results += "Failed to update DTC Network Settings."
         }
 
-        return
+        return $Results
     }
 }

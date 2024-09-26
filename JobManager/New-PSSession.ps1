@@ -21,6 +21,7 @@ function New-PSSession
         [PSCredential]$Credentials,
         [System.Collections.Generic.List[String]]$Hosts = @(),
         [String]$Session,
+        [String]$WriteProgressActivity,
         [Switch]$WriteProgress,
         [Int32]$WriteProgressID = 0
     )
@@ -30,10 +31,13 @@ function New-PSSession
         $Session = "SESS$(-join ((0..9) | Get-Random -Count 5))"
     }
 
-    $Task = [Plan_New_PSSession]::new($Hosts, $Session, $Credentials, $Async)
-    if ($WriteProgress) { $Task.WriteProgress = $true; $Task.WriteProgressID = $WriteProgressID }
+    $Plan = [Plan_New_PSSession]::new($Hosts, $Session, $Credentials, $Async)
 
-    $Results = $Task.Run()
+    $Plan.WriteProgress = $WriteProgress
+    $Plan.WriteProgressActivity = $WriteProgressActivity
+    $Plan.WriteProgressID = $WriteProgressID
 
-    return $Session
+    $Results = $Plan.Run()
+
+    return $Plan
 }

@@ -72,8 +72,10 @@ class Plan : Task
                 {
                     if ($_.Result.Count -gt 0) { $this.Result += $_.Result }
                     elseif ($_.Job -ne $null)
-                    { 
-                        $this.Result += (Receive-Job -Job $_.Job)
+                    {
+                        [System.Object]$r = (Receive-Job -Job $_.Job)
+                        $this.Result += $r
+                        $_.Result = $r
                     }
                     else { $this.Result += "ASYNCTASKFAIL" }
                 }
