@@ -3,41 +3,67 @@ function Invoke-RelativityInstall
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [String]$CopyTo = "C:\RelInstall\",
-        [Parameter(Mandatory = $false)]
-        [PSCredential]$CredsNetwork,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNull()]
-        [String]$ExtractTo = "C:\RelInstall\",
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
         [Instance] $Instance,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [String]$Source,
-        [Switch]$StageOnly
+        [Switch]$SkipStage,
+        [Switch]$SkipPreConfig
     )
 
-    if(-not $CredsNetwork) { $CredsNetwork = Get-Credential -Message "AD Network Credentials" }
+    [System.Collections.Generic.List[System.Object]]$PlanResults = @()
 
+    if (-not $Instance.CredPack.ADCredential()) { Write-Warning "Missing Credentials"; return }
 
-    $Task = [Plan_New_PSSession]::new($Instance.Servers.Name, $CredsNetwork, $true)
-    $Task.WriteProgressActivity = "Creating New Sessions"
-    $Task.WriteProgress = $true; $Task.WriteProgressID = 1
-    $_session = $Task.Run()
+    <# START SESSION #>
+    $_session = New-PSSession -Async `
+                        -Hosts $Instance.Servers.Name `
+                        -Credentials $Instance.CredPack.ADCredential() `
+                        -WriteProgressActivity "Creating Sessions" `
+                        -WriteProgress
+    $s = [String]$_session.Result
+    $PlanResults += $_session
 
-    $Task = [Plan_CopyFiles]::new($Instance.Servers.Name, $_session, $Source, $CopyTo, $ExtractTo, $true, $true)
-    $Task.WriteProgressActivity = "Staging Relativity Installation Files"
-    $Task.WriteProgress = $true; $Task.WriteProgressID = 2
-    $_result = $Task.Run()
+    <# STAGE FILES #>
+    if(-not $SkipStage)
+    {
+        $_staging = Copy-Files -Async `
+                        -Hosts $Instance.Servers.Name `
+                        -Session $s `
+                        -Source $Instance.Paths.Relativity `
+                        -CopyTo $Instance.Paths.RelativityStage `
+                        -ExtractTo $Instance.Paths.RelativityStage `
+                        -Unzip `
+                        -WriteProgressActivity "Staging Relativity Installation Files" `
+                        -WriteProgress
+        $PlanResults += $_staging
+    }
 
-    $Task = [Plan_Remove_PSSession]::new($Instance.Servers.Name, $_session, $true)
-    $Task.WriteProgressActivity = "Removing Sessions"
-    $Task.WriteProgress = $true; $Task.WriteProgressID = 3
-    $_result = $Task.Run()
+    <# START INSTALL RELATIVITY #>
+    $_installRel = Install-Relativity -Async `
+                        -Servers $Instance.Servers `
+                        -Session $s `
+                        -Paths $Instance.Paths `
+                        -WriteProgressActivity "Runnning Relativity Install Workflow"`
+                        -WriteProgress `
+                        -Validate `
+                        -SkipPreConfig
+    
+    try {
+        $PlanResults += $_installRel
+    }
+    catch {
+        Write-Warning "Variable is type: $($_installRel.GetType())"
+        Write-Host $_installRel
+    }
 
+    <# REMOVE SESSION #>
+    $_session = Remove-PSSession -Async `
+                        -Hosts $Instance.Servers.Name `
+                        -Session $s `
+                        -WriteProgressActivity "Removing Sessions" `
+                        -WriteProgress
+    $PlanResults += $_session    
 
-    Write-Host "Session Used: $_session"
+    Write-Host "Session Used: $s"
+    return $PlanResults
 }

@@ -2,7 +2,9 @@ class Plan_Install_Relativity : Plan
 {
     [PathTable]$Paths = [PathTable]::new()
     [System.Collections.Generic.List[Server]]$Servers = @()
+    [Boolean]$SkipPreConfig
     [Boolean]$Validate
+    
 
     Plan_Install_Relativity() { $this.Init() }
     Plan_Install_Relativity($servers, $Paths, $validate, $async)
@@ -21,18 +23,27 @@ class Plan_Install_Relativity : Plan
         $this.WriteProgressActivity = "Executing Relativity Installer Workflows"
 
         <# PRECONFIG #>
-        $this.WriteProgressActivity = "Executing PreConfiguration Plan"
-        $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.Paths.SxS)
-        $_preConfig.WriteProgress = $true
-        $_preConfig.WriteProgressID = 1
-        $this.Tasks.Add($_preConfig)
+        #TODO Add-LocalGroupMember -Group "Administrators" -Member "OASISDISCOVERY\svclvdshdrel"
+        if(-not $this.SkipPreConfig)
+        {
+            $this.WriteProgressActivity = "Executing PreConfiguration Plan"
+            $_preConfig = [Plan_PreConfig]::new($this.Servers, $this.Async, $this.Paths.SxS)
+            $_preConfig.SessionName = $this.SessionName
+            $_preConfig.WriteProgress = $true
+            $this.Tasks.Add($_preConfig)
+        }
 
-        <# VALIDATE #>
+        <# REGISTER RSS #>
+        # .\secretstore whitelist write $hostname.oasisdiscovery.com
+        # Create .\RSS\
+        # Copy-Item -Path "\\lvdshdrelscs001\C$\Program Files\Relativity Secret Store\Client\*" -Destination "C:\RelInstall\RSS\" -Recurse
+        # Run clientregistration.ps1       Workaround 'hit enter to continue'
 
         <# INSTALL #>
         $this.WriteProgressActivity = "Executing Relativity Installer"
         $this.Servers | ForEach-Object {
             $t = [Task_InstallRelativity]::new($_, $this.Paths)
+            $t.SessionName = $this.SessionName
             $this.Tasks.Add($t)
         }
 
@@ -44,11 +55,10 @@ class Plan_Install_Relativity : Plan
         $this.WriteProgressActivity = "Plan Completed"
     }
 
-    <#  OVERRIDE - Use this method to customize the result returned to pipeline.
-        By default, all Task results will be returned as an array.
+    <#
     Final()
     {
-        $this.Result = <Any object type>
+        $this.Result = 44
     }
     #>
 }

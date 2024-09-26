@@ -38,13 +38,17 @@ class Task_InstallRelativity : Task
         #TODO Factor in parameters for different roles.
         #TODO PSQ-DSQ are mutually exclusive
         $cmdFile = Join-Path -Path $installBundle.RelativityStage -ChildPath "Relativity.Installer.exe"
-        $cmd = "$($cmdFile) `
-            -log $($installBundle.RelativityStage) `
-            -responsefilepath '$($myResponse)' `
-            -EDDSDBOPASSWORD '$($credPack.EDDSDBOPASSWORD)' `
-            -SERVICEPASSWORD '$($credPack.SERVICEPASSWORD)' `
-            -SERVICEUSERNAME '$($credPack.SERVICEUSERNAME)'"
+        $cmd = "$($cmdFile) -log $($installBundle.RelativityStage) -responsefilepath $($responsePath) -EDDSDBOPASSWORD $($credPack.EDDSDBOPASSWORD) -SERVICEPASSWORD $($credPack.SERVICEPASSWORD) -SERVICEUSERNAME $($credPack.SERVICEUSERNAME)"
 
-        return
+        # .\Relativity.Installer.exe -log $log_file  -responsefilepath="$($response_file)"
+        try {
+            Set-Location $installBundle.RelativityStage
+            $log = Join-Path -Path $installBundle.RelativityStage -ChildPath "Install_Log.txt"
+            .\Relativity.Installer.exe /log "$log" /responsefilepath="$responsePath" EDDSDBOPASSWORD="$($credPack.EDDSDBOPASSWORD)" SERVICEPASSWORD="$($credPack.SERVICEPASSWORD)" SERVICEUSERNAME="$($credPack.SERVICEUSERNAME)"
+            return $cmd #TODO RMV ASAP
+        }
+        catch {
+            return $_.Exception.Message
+        }
     }
 }

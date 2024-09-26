@@ -14,7 +14,11 @@ function Install-Relativity
         [System.Collections.Generic.List[Server]] $Servers = [System.Collections.Generic.List[Server]]::new(),
         [PathTable]$Paths = [PathTable]::new(),
         [Switch]$Validate,
-        [String]$SessionName
+        [String]$Session,
+        [Switch]$SkipPreConfig,
+        [String]$WriteProgressActivity,
+        [Switch]$WriteProgress,
+        [Int32]$WriteProgressID = 0
     )
 
 
@@ -24,8 +28,13 @@ function Install-Relativity
         $Validate,
         $Async)
     
-    #$Plan.SessionName = $s
-    $Plan.Run()
+    $Plan.SessionName = $Session
+    $Plan.SkipPreConfig = $SkipPreConfig
+    $Plan.WriteProgress = $WriteProgress
+    $Plan.WriteProgressActivity = $WriteProgressActivity
+    $Plan.WriteProgressID = $WriteProgressID
+
+    $Plan.Run() | Out-Null
 
     return $Plan
 }
