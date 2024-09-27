@@ -1,5 +1,21 @@
 class Server
 {
+    <#
+        .DESCRIPTION
+            [Server] object holds information on a single Host.
+        
+        .PARAMETER Install
+            Toggle to flag this server for install or hotfix
+        .PARAMETER Name
+            Hostname
+        .PARAMETER Role
+            List of Relativity roles for this Host
+        .PARAMETER ResponseFileProperties
+            [Hashtable] of values to be used in response file
+        .PARAMETER ParentInstance
+            reference to Parent
+    #>
+    [Boolean]$Install
     [String] $Name
     [System.Collections.Generic.List[RelativityServerRole]] $Role = @()
     [Hashtable] $ResponseFileProperties = @{}

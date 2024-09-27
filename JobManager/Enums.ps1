@@ -21,7 +21,8 @@ enum Action
     Stop = 0
     Start = 1
     Restart = 2
-    Delete = 3
+    Remove = 3
     Add = 4
     Copy = 5
+    Read = 6
 }

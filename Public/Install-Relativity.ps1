@@ -10,8 +10,9 @@ function Install-Relativity
             [PathTable] will provide remote and local installation paths.
     #>
     param(
-        [Switch]$Async,    
-        [System.Collections.Generic.List[Server]] $Servers = [System.Collections.Generic.List[Server]]::new(),
+        [Switch]$Async,
+        [System.Collections.Generic.List[Server]] $RssServers = @(),
+        [System.Collections.Generic.List[Server]] $Servers = @(),
         [PathTable]$Paths = [PathTable]::new(),
         [Switch]$Validate,
         [String]$Session,
@@ -24,12 +25,13 @@ function Install-Relativity
 
     $Plan = [Plan_Install_Relativity]::new(
         $Servers,
+        $RssServers,
         $Paths,
+        $Session,
         $Validate,
+        $SkipPreConfig,
         $Async)
     
-    $Plan.SessionName = $Session
-    $Plan.SkipPreConfig = $SkipPreConfig
     $Plan.WriteProgress = $WriteProgress
     $Plan.WriteProgressActivity = $WriteProgressActivity
     $Plan.WriteProgressID = $WriteProgressID

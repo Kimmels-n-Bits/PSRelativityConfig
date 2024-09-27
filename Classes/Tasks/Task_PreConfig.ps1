@@ -1,12 +1,14 @@
 class Task_PreConfig : Task
 {
-    [Server]$Server = [Server]::new()
-    [String]$SxS
+    [PathTable]$Paths
+    [Server]$Server
+    [System.Collections.Generic.List[Server]]$RSSServers = @()
 
-    Task_PreConfig($server, $sxs)
+    Task_PreConfig($server, $rssServers, $paths)
     {
         $this.Server = $server
-        $this.SxS = $sxs
+        $this.RSSServers = $rssServers
+        $this.Paths = $paths
         $this.Hostname = $this.Server.Name
         $this.Init()
     }
@@ -15,16 +17,45 @@ class Task_PreConfig : Task
     {
         $this.Arguments = @(
             $this.Server.Role,
-            $this.SxS
+            $this.Paths.SxS,
+            $this.Paths.SecretStoreStage,
+            $this.RSSServers[0].Name,
+            $this.Server.ParentInstance.CredPack.SERVICEUSERNAME
         )
     }
 
     hidden $ScriptBlock = {
-        param($roles, $netSource)
+        param($roles, $netSource, $rssStage, $rss, $svcAccount)
 
         [System.Collections.Generic.List[String]]$Results = @()
 
         $Results += ":::: [$($env:COMPUTERNAME)]"
+
+        # Local Admin
+        Add-LocalGroupMember -Group "Administrators" -Member $svcAccount
+
+        # RSS Cert Registration
+        if (-not (Test-Path $rssStage)) { New-Item -Path $rssStage -ItemType Directory }
+        
+        try {
+            #TODO investigate why this does not do anything at all. (but copy files [Plan] still works)
+            #Set-Location "\\LVDSHDRELSCS001\C$\Program Files\Relativity Secret Store\Client\"
+            #Copy-Item -Path "Y:\*" -Destination $rssStage -Recurse
+        }
+        catch { $Results += "[ERROR] $_" }
+        
+        
+        $regScript = Join-path -Path $rssStage -ChildPath "\Client\clientregistration.ps1"
+        if (Test-Path $regScript)
+        {
+            Set-Location -Path $(Join-path -Path $rssStage -ChildPath "Client")
+            & .\clientregistration.ps1 -Confirm -ForceReRegistration | Write-Output
+
+            Get-Location | Write-Output
+
+            #TODO Validate local cert
+        }
+
 
         # Jumbo Frames
         # WARN: Interrupts Connection

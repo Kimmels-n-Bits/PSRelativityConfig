@@ -28,6 +28,7 @@ class Instance
         # Strip + Scrub unserializable [Server] properties
         $this.Servers | ForEach-Object {
             $_server = [PSCustomObject]@{
+                Install = $_.Install
                 Name = $_.Name
                 ResponseFileProperties = $_.ResponseFileProperties
                 Role = [System.Collections.Generic.List[String]]::new()
@@ -78,6 +79,7 @@ class Instance
 
         $jsonObj.Servers | ForEach-Object {
             $_server = [Server]@{
+                Install = $_.Install
                 Name = $_.Name
             }
 

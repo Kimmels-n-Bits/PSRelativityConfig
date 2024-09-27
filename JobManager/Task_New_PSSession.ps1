@@ -29,8 +29,14 @@ class Task_New_PSSession : Task
         {
             if ($null -eq (Get-PSSessionConfiguration -Name $PSSessionName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
             {
-                Register-PSSessionConfiguration -RunAsCredential $NetworkCredential `
-                        -Name $PSSessionName -NoServiceRestart *>$null
+                try {
+                    Register-PSSessionConfiguration -RunAsCredential $NetworkCredential `
+                        -Name $PSSessionName *>$null
+                }
+                catch {
+                    Write-Output "[ERROR] $_"
+                }
+                
             }
         }
         catch
