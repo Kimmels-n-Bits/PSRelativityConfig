@@ -159,6 +159,11 @@ class RelativityInstance
                     Write-Verbose "Added $($Property) Property to $($existingServer.Name)."
                 }
             }
+
+            foreach ($role in $newServer.Role){
+                $existingServer.AddRole($role)
+            }
+            
             Write-Verbose "Merged the $($newServer.Name) server with previously-existing server."
         }
         catch

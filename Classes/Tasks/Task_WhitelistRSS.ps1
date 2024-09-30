@@ -1,8 +1,8 @@
-class Task_RegisterRSS : Task
+class Task_WhitelistRSS : Task
 {
     [System.Collections.Generic.List[String]]$HostsToRegister = @()
 
-    Task_RegisterRSS($hostname, $hostsToRegister)
+    Task_WhitelistRSS($hostname, $hostsToRegister)
     {
         $this.Hostname = $hostname
         $this.HostsToRegister = $hostsToRegister
@@ -27,7 +27,7 @@ class Task_RegisterRSS : Task
             if ($whiteList | Where-Object { $_ -like "$($name)*" }) {
                 Write-Output "[$($name)] Whitelist Existed"
             } else {
-                .\secretstore whitelist write "$($name).oasisdiscovery.com"
+                .\secretstore whitelist write "$($name).$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain)"
                 Write-Output "[$($name)] Whitelist Added"
             }
         }

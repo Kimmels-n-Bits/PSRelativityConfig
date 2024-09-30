@@ -1,4 +1,4 @@
-class Plan_RegisterRSS : Plan
+class Plan_WhitelistRSS : Plan
 {
     <#
         .DESCRIPTION
@@ -9,7 +9,7 @@ class Plan_RegisterRSS : Plan
     [Action]$Action 
 
 
-    Plan_RegisterRSS($secretStores, $hostnames, [Action]$action, $session, $async)
+    Plan_WhitelistRSS($secretStores, $hostnames, [Action]$action, $session, $async)
     {
         $this.SecretStores = $secretStores
         $this.HostsToRegister = $hostnames
@@ -28,7 +28,7 @@ class Plan_RegisterRSS : Plan
                 }
                 4 {
                     Write-Host $_.Name
-                    $t = [Task_RegisterRSS]::new($server.Name, $this.HostsToRegister)
+                    $t = [Task_WhitelistRSS]::new($server.Name, $this.HostsToRegister)
                     $this.Tasks.Add($t)
                 }
                 6 {

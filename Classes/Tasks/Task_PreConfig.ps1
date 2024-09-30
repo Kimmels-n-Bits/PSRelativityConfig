@@ -58,14 +58,24 @@ class Task_PreConfig : Task
 
 
         # Jumbo Frames
-        # WARN: Interrupts Connection
-        Set-NetAdapterAdvancedProperty -Name * -RegistryKeyword "*JumboPacket" -RegistryValue 9014
-        $jumboFramesUpdated = Get-NetAdapterAdvancedProperty -Name * | Where-Object { $_.RegistryKeyword -eq "*JumboPacket" -and $_.RegistryValue -eq 9014 }
+        # WARN: Interrupts Connection.  Also fails in AWS due to network policy
+        try {
+            Get-NetIPInterface | Where-Object { $_.ConnectionState -eq 'Connected' } | ForEach-Object {
+                Set-NetIPInterface -InterfaceAlias $_.InterfaceAlias -NlMtu 9001
+            }
+            $Results += "Jumbo Frames updated successfully."
+            #Set-NetAdapterAdvancedProperty -Name * -RegistryKeyword "*JumboPacket" -RegistryValue 9014
+        }
+        catch {
+            $Results += "Failed to update Jumbo Frames. $_"
+        }
+        
+        <#$jumboFramesUpdated = Get-NetAdapterAdvancedProperty -Name * | Where-Object { $_.RegistryKeyword -eq "*JumboPacket" -and $_.RegistryValue -eq 9014 }
         if ($jumboFramesUpdated) {
             $Results += "Jumbo Frames updated successfully."
         } else {
             $Results += "Failed to update Jumbo Frames."
-        }
+        }#>
 
         # Power Plan
         $powerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"

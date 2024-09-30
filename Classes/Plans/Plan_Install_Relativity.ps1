@@ -30,7 +30,7 @@ class Plan_Install_Relativity : Plan
         {
             <# REGISTER RSS #>
             $this.WriteProgressActivity = "Registering with Secret Store"
-            $_regRSS = [Plan_RegisterRSS]::new($this.RssServers, $this.Servers.Name, [Action]::Add, $this.SessionName, $this.Async)
+            $_regRSS = [Plan_WhitelistRSS]::new($this.RssServers, $this.Servers.Name, [Action]::Add, $this.SessionName, $this.Async)
             $_regRSS.WriteProgress = $true
             $this.Tasks.Add($_regRSS)
 
