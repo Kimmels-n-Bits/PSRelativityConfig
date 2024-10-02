@@ -1,0 +1,7 @@
+DATAFILESNETWORKPATH=\\oasisdiscovery\dev\LVDSHDRELINS001\REPO\01
+NISTPACKAGEPATH=C:\RelativityInstall\NISTPackage.zip
+IDENTITYSERVERURL=https://lvdshdrelweb001.oasisdiscovery.com/Relativity/Identity
+RELATIVITYINSTANCENAME=LVSHDSRELINS001
+RELATIVITYSQLINSTANCE=LVDSHDRELESQ001
+WORKERINSTALLPATH=C:\Program Files\kCura Corporation\Invariant\Worker\
+WORKERNETWORKPATH=\\lvdshdrelpsq001\InvariantWorker

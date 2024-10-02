@@ -32,7 +32,14 @@ class Task_PreConfig : Task
         $Results += ":::: [$($env:COMPUTERNAME)]"
 
         # Local Admin
-        Add-LocalGroupMember -Group "Administrators" -Member $svcAccount
+        $isAdmin = Get-LocalGroupMember -Group "Administrators" | Where-Object { $_.Name -eq $svcAccount }
+        if (-not $isAdmin) {
+            Add-LocalGroupMember -Group "Administrators" -Member $svcAccount
+            $Results += "$svcAccount has been added to the Administrators group."
+        } else {
+            $Results += "$svcAccount is already an Administrator."
+        }
+
 
         # RSS Cert Registration
         if (-not (Test-Path $rssStage)) { New-Item -Path $rssStage -ItemType Directory }

@@ -22,6 +22,8 @@ class Task_WhitelistRSS : Task
         Set-Location $RSSPath
         $whiteList = .\secretstore.exe whitelist read
 
+        #TODO Scrub string to just use hostname.
+
         foreach ($h in $hostnames) {
             $name = $h.ToLower()
             if ($whiteList | Where-Object { $_ -like "$($name)*" }) {

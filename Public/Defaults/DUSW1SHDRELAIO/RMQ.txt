@@ -1,0 +1,6 @@
+SERVERFQDN=https://lvdshdrmq.oasisdiscovery.com
+SERVICEBUSPROVIDER=RabbitMQ
+SERVICENAMESPACE=Relativity
+SHAREDACCESSKEY=$($service_bus_shared_access_key)
+SHAREDACCESSKEYNAME=relativity
+TLSENABLED=1
