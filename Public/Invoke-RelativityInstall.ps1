@@ -14,7 +14,17 @@ function Invoke-RelativityInstall
     $ServersToInstall = $Instance.Servers | Where-Object { $_.Install -eq $true }
     $RssServers = $Instance.Servers | Where-Object { $_.Role -contains "SecretStore" }
 
+    # Check For duplicates
+    $dupes = $Instance.Servers | Group-Object -Property Name | Where-Object { $_.Count -gt 1 }
+    if($dupes)
+    {
+        foreach ($group in $dupes) {
+            Write-Error "[$($group.Name)]`tDuplicate Server Found!"
+        }
+        return
+    }
 
+    # Handle Credentials
     if (-not $Instance.CredPack.ADCredential()) { Write-Warning "Missing Credentials"; return }
 
     <# START SESSION #>

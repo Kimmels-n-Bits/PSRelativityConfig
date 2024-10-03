@@ -11,20 +11,24 @@ class Task_WhitelistRSS : Task
 
     Init()
     {
-        $this.Arguments = @($this.HostsToRegister)
+        $this.Arguments = @($($this.HostsToRegister -join ';'))
     }    
 
     hidden $ScriptBlock = {
         param($hostnames)
         $RSSPath = "C:\Program Files\Relativity Secret Store\Client"
+        $hostsList = $hostnames -split ';'
 
         if (-not (Test-Path $RSSPath)) { Write-Output "[ERROR] Relativity Secret Store Path not found"; return }
         Set-Location $RSSPath
         $whiteList = .\secretstore.exe whitelist read
 
+        Write-Output $hostsList
+        Write-Output "COUNT $($hostsList.count)"
+
         #TODO Scrub string to just use hostname.
 
-        foreach ($h in $hostnames) {
+        foreach ($h in $hostsList) {
             $name = $h.ToLower()
             if ($whiteList | Where-Object { $_ -like "$($name)*" }) {
                 Write-Output "[$($name)] Whitelist Existed"
