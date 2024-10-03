@@ -23,9 +23,6 @@ class PathTable
     [String] $NISTPackageStage = "C:\RelInstall\Nist\"
     [String] $Relativity
     [String] $RelativityStage = "C:\RelInstall\Relativity\"
-    [String] $ResponseCommon
-    [String] $ResponseInv
-    [String] $ResponseRMQ
     [String] $SecretStore
     [String] $SecretStoreStage = "C:\RelInstall\RSS\"
     [String] $SxS = "D:\Sources\SxS"

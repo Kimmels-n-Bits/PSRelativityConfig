@@ -15,7 +15,7 @@ function Convert-ToInstanceV2
                 $RelInstance2.Paths.ResponseINV = ".\Public\Defaults\LVDSHDRELINS001\Invariant.txt"
                 
                 $RelInstance2.Servers | ForEach-Object {
-                    $_.InitProperties()
+                    $_.InitResponseProperties()
                 }
     #>
     param(

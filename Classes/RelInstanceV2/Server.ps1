@@ -17,10 +17,10 @@ class Server
     #>
     [Boolean]$Install
     [String] $Name
+    [System.Object] $ParentInstance
     [System.Collections.Generic.List[RelativityServerRole]] $Role = @()
     [Hashtable] $ResponseFileProperties = @{}
-    [System.Object] $ParentInstance
-
+    
 
     SetProperty([Hashtable] $properties)
     {
@@ -35,22 +35,15 @@ class Server
         $this.ResponseFileProperties[$property] = $value
     }
 
-    InitProperties()
+    InitResponseProperties()
     {
         $this.ResponseFileProperties = @{}
 
-        # COMMON
-        if($this.ParentInstance -eq $null) { Write-Warning "[ERROR]Server missing ParentInstance reference"; return }
-        if (Test-Path $this.ParentInstance.Paths.ResponseCommon)
-        {
-            Get-Content -Path $this.ParentInstance.Paths.ResponseCommon | ForEach-Object {
-                $key, $value = $_ -split '='
-                $this.SetProperty($key, $value)
-            }
-        }
-        
+        # COMMON PARAMS
+        if($this.ParentInstance -eq $null) { Write-Error "Server missing ParentInstance reference"; return }
+        $this.ParentInstance.ResponseCommon.GetEnumerator() | ForEach-Object { $this.ResponseFileProperties[$_.Key] = $_.Value }
 
-        # ROLE SPECIFIC
+        # ROLE SPECIFIC PARAMS
         if ($this.Role -contains [RelativityServerRole]::Agent)
         {
             $this.SetProperty("INSTALLAGENTS", "1")
@@ -81,14 +74,7 @@ class Server
         if ($this.Role -contains [RelativityServerRole]::ServiceBus)
         {
             $this.SetProperty("INSTALLSERVICEBUS", "1")
-
-            if (Test-Path $this.ParentInstance.Paths.ResponseRMQ)
-            {
-                Get-Content -Path $this.ParentInstance.Paths.ResponseRMQ | ForEach-Object {
-                    $key, $value = $_ -split '='
-                    $this.SetProperty($key, $value)
-                }
-            }
+            $this.ParentInstance.ResponseMessageBroker.GetEnumerator() | ForEach-Object { $this.ResponseFileProperties[$_.Key] = $_.Value }
         }
 
         if ($this.Role -contains [RelativityServerRole]::Web)
@@ -100,27 +86,13 @@ class Server
         if ($this.Role -contains [RelativityServerRole]::Worker)
         {
             $this.SetProperty("INSTALLWORKER", "1")
-
-            if (Test-Path $this.ParentInstance.Paths.ResponseINV)
-            {
-                Get-Content -Path $this.ParentInstance.Paths.ResponseINV | ForEach-Object {
-                    $key, $value = $_ -split '='
-                    $this.SetProperty($key, $value)
-                }
-            }
+            $this.ParentInstance.ResponseINV.GetEnumerator() | ForEach-Object { $this.ResponseFileProperties[$_.Key] = $_.Value }
         }
 
         if ($this.Role -contains [RelativityServerRole]::WorkerManager)
         {
             $this.SetProperty("INSTALLQUEUEMANAGER", "1")
-
-            if (Test-Path $this.ParentInstance.Paths.ResponseINV)
-            {
-                Get-Content -Path $this.ParentInstance.Paths.ResponseINV | ForEach-Object {
-                    $key, $value = $_ -split '='
-                    $this.SetProperty($key, $value)
-                }
-            }
+            $this.ParentInstance.ResponseINV.GetEnumerator() | ForEach-Object { $this.ResponseFileProperties[$_.Key] = $_.Value }
         }
     }
 }

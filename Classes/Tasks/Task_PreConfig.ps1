@@ -33,8 +33,10 @@ class Task_PreConfig : Task
 
         # Local Admin
         $isAdmin = Get-LocalGroupMember -Group "Administrators" | Where-Object { $_.Name -eq $svcAccount }
-        if (-not $isAdmin) {
-            Add-LocalGroupMember -Group "Administrators" -Member $svcAccount
+        if (-not $($isAdmin)) {
+            try { Add-LocalGroupMember -Group "Administrators" -Member $svcAccount }
+            catch { Write-Error "$svcAccount attempted to add, but failed with. $_" }
+            
             $Results += "$svcAccount has been added to the Administrators group."
         } else {
             $Results += "$svcAccount is already an Administrator."
