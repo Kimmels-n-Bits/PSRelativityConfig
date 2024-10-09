@@ -1,5 +1,6 @@
 class Task_Timer : Task
 {
+    #TODO test task. remove later
     Task_Timer($hostname) { $this.Hostname = $hostname; $this.Init() }
 
     Init()

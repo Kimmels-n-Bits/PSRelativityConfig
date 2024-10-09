@@ -100,6 +100,7 @@ class Instance
         # Strip + Scrub unserializable [Server] properties
         $this.Servers | ForEach-Object {
             $_server = [PSCustomObject]@{
+                ArtifactID = $_.ArtifactID
                 Install = $_.Install
                 Name = $_.Name
                 ResponseFileProperties = $_.ResponseFileProperties
@@ -163,6 +164,7 @@ class Instance
         # Servers
         $jsonObj.Servers | ForEach-Object {
             $_server = [Server]@{
+                ArtifactID = $_.ArtifactID
                 Install = $_.Install
                 Name = $_.Name
             }

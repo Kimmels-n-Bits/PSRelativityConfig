@@ -4,6 +4,8 @@ class Server
         .DESCRIPTION
             [Server] object holds information on a single Host.
         
+        .PARAMETER ArtifactID
+            Relativity ArtifactID
         .PARAMETER Install
             Toggle to flag this server for install or hotfix
         .PARAMETER Name
@@ -15,7 +17,8 @@ class Server
         .PARAMETER ParentInstance
             reference to Parent
     #>
-    [Boolean]$Install
+    [Int32] $ArtifactID
+    [Boolean] $Install
     [String] $Name
     [System.Object] $ParentInstance
     [System.Collections.Generic.List[RelativityServerRole]] $Role = @()
