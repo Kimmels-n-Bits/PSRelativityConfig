@@ -59,6 +59,7 @@ class Plan : Task
             }
         }
 
+        # Wait for Async Workflows to complete.
         $this.MonitorTasks()
 
         if($this.Async)
@@ -73,9 +74,26 @@ class Plan : Task
                     if ($_.Result.Count -gt 0) { $this.Result += $_.Result }
                     elseif ($_.Job -ne $null)
                     {
-                        [System.Object]$r = (Receive-Job -Job $_.Job)
-                        $this.Result += $r
-                        $_.Result = $r
+                        if ($_.Job.State -eq 'Failed')
+                        {
+                            # Non-Terminating Errors
+                            foreach ($err in $_.Job.ChildJobs[0].Error)
+                            {
+                                $_.Errors.Add($err.Exception.Message)
+                            }
+                            
+                            # Terminating Errors
+                            foreach ($err in $_.Job.ChildJobs[0].JobStateInfo)
+                            {
+                                $_.Errors.Add($err.Reason.Message)
+                            }
+                        }
+                        else
+                        {
+                            [System.Object]$r = (Receive-Job -Job $_.Job)
+                            $this.Result += $r
+                            $_.Result = $r
+                        }
                     }
                     else { $this.Result += "ASYNCTASKFAIL" }
                 }
@@ -87,11 +105,8 @@ class Plan : Task
                 if ($_ -is [Plan]) { $this.Result += $_.Result }
                 else
                 {
+                    # Cascade Results to parent object
                     if($_.Result -ne $null) { $this.Result += $_.Result }
-                    else
-                    {
-                        $this.Result += "SYNCTASKFAIL"
-                    }
                 }
             }
         }

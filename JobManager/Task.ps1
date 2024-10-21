@@ -49,7 +49,29 @@ class Task
             if(-not $this.Async)
             {
                 Wait-Job -Job $this.Job
-                $this.Result += (Receive-Job -Job $this.Job)
+                #$this.Result += (Receive-Job -Job $this.Job)
+
+                if ($this.Job.State -eq 'Failed')
+                {
+                    # Non-Terminating Errors
+                    foreach ($err in $this.Job.ChildJobs[0].Error)
+                    {
+                        $this.Errors.Add($err.Exception.Message)
+                    }
+                    
+                    # Terminating Errors
+                    foreach ($err in $this.Job.ChildJobs[0].JobStateInfo)
+                    {
+                        $this.Errors.Add($err.Reason.Message)
+                    }
+                }
+                else
+                {
+                    [System.Object]$r = (Receive-Job -Job $this.Job)
+                    #$this.Result += $r
+                    $this.Result = $r
+                }
+
                 $this.Status = 1
             }
         }
@@ -62,6 +84,7 @@ class Task
         $this.Runtime = $this.TimeFormat($_timer.Elapsed)
         return $this.Result
     }
+
 
     #region TODO Event Handling **NOT IMPLEMENTED YET*
     [void]Event([EventAction]$event, [Task]$task)
