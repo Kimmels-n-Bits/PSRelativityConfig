@@ -9,7 +9,7 @@ function Stop-Services
         
         .EXAMPLE
             Asyncronously stop each listed service, for each host.
-            Stop-Service -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
+            Stop-Services -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
                 -Services @("kCura EDDS Agent Manager", "WinRM", "kCura Service Host Manager") `
                 -Session "mySession" `
                 -Async
@@ -23,9 +23,11 @@ function Stop-Services
     )
 
     #TODO investigate support for sessionless start/stops
-    $Task = [Plan_Service]::new($Hosts, $Session, [Action]::Stop, $Services, $Async)
-    $Results = $Task.Run()
+    $Plan = [Plan_Service]::new($Hosts, $Session, [Action]::Stop, $Services, $Async)
+    $Results = $Plan.Run()
 
-    Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
-    Write-Host "Hosts: $($Hosts.count)"
+    #Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Plan.Progress())%"
+    #Write-Host "Hosts: $($Hosts.count)"
+
+    return $Plan
 }

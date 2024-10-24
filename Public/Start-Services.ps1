@@ -9,7 +9,7 @@ function Start-Services
 
         .EXAMPLE
             Asyncronously Starts each listed service, for each host.
-            Start-Service -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
+            Start-Services -Hosts @("LVDSHDRELAGT002", "FAKESERVER001") `
                 -Services @("kCura EDDS Agent Manager", "WinRM", "kCura Service Host Manager") `
                 -Session "mySession" `
                 -Async
@@ -23,9 +23,11 @@ function Start-Services
     )
 
     #TODO investigate support for sessionless start/stops
-    $Task = [Plan_Service]::new($Hosts, $Session, [Action]::Start, $Services, $Async)
-    $Results = $Task.Run()
+    $Plan = [Plan_Service]::new($Hosts, $Session, [Action]::Start, $Services, $Async)
+    $Results = $Plan.Run()
 
-    Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Task.Progress())%"
-    Write-Host "Hosts: $($Hosts.count)"
+    #Write-Host "[$($MyInvocation.MyCommand.Name)] Completed $($Plan.Progress())%"
+    #Write-Host "Hosts: $($Hosts.count)"
+
+    return $Plan
 }

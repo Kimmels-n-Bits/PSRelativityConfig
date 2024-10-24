@@ -31,7 +31,7 @@ class Task_Service : Task
                 }
                 elseif ($action -eq 1) # Start
                 {
-                    Start-Service -Name $svc -ErrorAction SilentlyContinue
+                    Start-Service -Name $svc -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
                     while ((Get-Service -Name $svc).Status -ne 'Running') { Start-Sleep -Seconds 1 }
                 }
             }

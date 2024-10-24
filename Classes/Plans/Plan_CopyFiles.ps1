@@ -1,5 +1,21 @@
 class Plan_CopyFiles : Plan
 {
+    <#
+        .DESCRIPTION
+            Stages files from a path source to one/many hosts.
+        
+        .PARAMETER CopyToPath
+            Path to stage files
+
+        .PARAMETER ExtractToPath
+            (optional) Path to extract a zip to, before copying to Stage location.
+
+        .PARAMETER SourcePath
+            Path of the source files, can be a File or a Folder
+
+        .PARAMETER Unzip
+            (optional) Flag to unzip file after copy.
+    #>
     [String]$SourcePath
     [String]$CopyToPath
     [String]$ExtractToPath

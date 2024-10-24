@@ -19,7 +19,7 @@ class Plan : Task
     #>
     [System.Collections.Generic.List[String]]$Hostnames = @()
     [System.Collections.Generic.List[Task]]$Tasks = @()
-    hidden [Int32]$MonitorPolling = 3
+    hidden [Int32]$MonitorPolling = 1
 
     Plan() {}
 
@@ -62,6 +62,7 @@ class Plan : Task
         # Wait for Async Workflows to complete.
         $this.MonitorTasks()
 
+        # Capture Task Returns
         if($this.Async)
         {
             $this.Tasks | ForEach-Object {
@@ -87,6 +88,9 @@ class Plan : Task
                             {
                                 $_.Errors.Add($err.Reason.Message)
                             }
+
+                            # Capture any Write-Output before fail
+                            $_.Result = Receive-Job -Job $_.Job
                         }
                         else
                         {
